@@ -1,0 +1,119 @@
+{
+  "source": "/home/ishanu/Dropbox/ZED/Research/latex2docx/example/main.tex",
+  "outputs": {
+    "expanded_tex": "/home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/main_expanded_inputs.tex",
+    "clean_tex": "/home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/main_clean_refs_hardcoded.tex",
+    "tables_tex": "/home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/tables_extracted.tex",
+    "tables_standalone_tex": "/home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/tables_standalone.tex",
+    "figure_captions_tex": "/home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/figure_captions.tex",
+    "main_docx": "/home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/manuscript.docx",
+    "tables_docx": "/home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/tables.docx",
+    "tables_parsed_docx": "/home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/tables_parsed.docx",
+    "figures_dir": "/home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/figures"
+  },
+  "n_tables": 5,
+  "n_figures": 2,
+  "tables": [
+    {
+      "kind": "table",
+      "env": "table",
+      "label": "table_pat_char",
+      "caption": "Baseline characteristics of patient cohorts",
+      "number": 1,
+      "graphics": [],
+      "raw": "[omitted]"
+    },
+    {
+      "kind": "table",
+      "env": "table",
+      "label": "table_perf",
+      "caption": "\\zebra performance for the 1-month prediction horizon.",
+      "number": 2,
+      "graphics": [],
+      "raw": "[omitted]"
+    },
+    {
+      "kind": "table",
+      "env": "table",
+      "label": "tab:calibration_metrics",
+      "caption": "Calibration performance by sex and age stratum for 1 month horizon (see also Fig.~\\ref{figsurvival}a).",
+      "number": 3,
+      "graphics": [],
+      "raw": "[omitted]"
+    },
+    {
+      "kind": "table",
+      "env": "table",
+      "label": "table_target",
+      "caption": "ICD-10 codes used to define the case cohort",
+      "number": 4,
+      "graphics": [],
+      "raw": "[omitted]"
+    },
+    {
+      "kind": "table",
+      "env": "table",
+      "label": "table_MODEL_NUMBERS",
+      "caption": "Feature and Parameter Counts by Model",
+      "number": 5,
+      "graphics": [],
+      "raw": "[omitted]"
+    }
+  ],
+  "figures": [
+    {
+      "kind": "figure",
+      "env": "figure",
+      "label": "fig_curves",
+      "caption": "\nOne-month prediction performance across patient cohorts. Out-of-sample performance of the ZeBRA SISA model for predicting first recorded suicidal ideation, intentional self-harm, or suicide attempt within 1 month of the screening index point. Panels (a)–(c) show results for males and panels (d)–(f) show results for females. Panels (a) and (d) show receiver operating characteristic (ROC) curves for the all-patient cohort and for the PTSD, TBI, and no-MDD subcohorts. Panels (b) and (e) show positive predictive value (PPV) as a function of sensitivity across decision thresholds. Panels (c) and (f) show the corresponding positive likelihood ratio (LR+) across thresholds. All metrics were computed on held-out validation patients; shaded or error annotations, where present, denote the uncertainty reported in the Methods.\n",
+      "number": 1,
+      "graphics": [
+        "Figures/External/figperf1M"
+      ],
+      "raw": "[omitted]",
+      "copied_files": [
+        "/home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/figures/figperf1M.pdf"
+      ]
+    },
+    {
+      "kind": "figure",
+      "env": "figure",
+      "label": "figsurvival",
+      "caption": "\\textbf{Calibration and threshold-based temporal risk behavior of the \\zebra model.}\na, Calibration of predicted risk against observed event rate across sex- and age-stratified cohorts. Points show binned mean predicted risk and corresponding observed event rate; the dashed red line denotes perfect calibration. The approximately diagonal trend indicates that higher \\zebra risk scores correspond to higher observed SI/SA rates (See Table~\\ref{tab:calibration_metrics} for intercept and slope estimates).\nb, KM plots to show event-free survival following a threshold-based positive screen. Patients were stratified by whether their \\zebra risk score crossed the prespecified high-specificity threshold (99\\%). Across all sex- and age-stratified cohorts, patients crossing threshold showed substantially faster accumulation of documented events over the subsequent weeks than patients who never crossed threshold, supporting the use of threshold crossing as a time-bounded clinical decision support trigger.\nc, Dynamic threshold operating characteristics as a function of follow-up window $k$ (weeks). We define $E_k$ as the occurrence of a documented event within $k$ weeks, $\\rho$ as the \\zebra risk score, and $t$ as the threshold corresponding to the high-specificity operating point, and plot  time-dependent predictive values, $P(E_k \\vert \\rho > t)$ and $P(\\neg E_k \\vert \\rho \\leq t)$, together with prevalence-independent operating characteristics, $P(\\rho > t \\vert E_k)$ and $P(\\rho \\leq t \\vert \\neg E_k)$. These curves quantify both the clinical yield of a positive screen and the stability of threshold-based discrimination over the post-screening follow-up interval.",
+      "number": 2,
+      "graphics": [
+        "Figures/External/figsurvival"
+      ],
+      "raw": "[omitted]",
+      "copied_files": [
+        "/home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/figures/figsurvival.pdf"
+      ]
+    }
+  ],
+  "label_map": {
+    "table_pat_char": "1",
+    "fig_curves": "1",
+    "table_perf": "2",
+    "figsurvival": "2",
+    "tab:calibration_metrics": "3",
+    "table_target": "4",
+    "table_MODEL_NUMBERS": "5"
+  },
+  "bibliography_style": "apa-numbered",
+  "csl_path": "/home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/csl/apa-numbered.csl",
+  "status": {
+    "bibliography_style": "apa-numbered",
+    "csl_status": "bundled CSL: /home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/csl/apa-numbered.csl",
+    "csl_path": "/home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/csl/apa-numbered.csl",
+    "main_docx": "created with direct pandoc",
+    "bibliography_files": "/home/ishanu/Dropbox/ZED/Research/latex2docx/example/zcor.bib;/home/ishanu/Dropbox/ZED/Research/latex2docx/example/shap.bib;/home/ishanu/Dropbox/ZED/Research/latex2docx/example/allbib.bib;/home/ishanu/Dropbox/ZED/Research/latex2docx/example/jamacommentary.bib;/home/ishanu/Dropbox/ZED/Research/latex2docx/example/methods.bib;/home/ishanu/Dropbox/ZED/Research/latex2docx/example/sisa2.bib;/home/ishanu/Dropbox/ZED/Research/latex2docx/example/spor.bib",
+    "csl": "/home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/csl/apa-numbered.csl",
+    "pandoc_output": "[WARNING] Could not load include file figurestablesextrapredictionwindows.tex at /home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/main_clean_refs_hardcoded.tex line 1084 column 46\n",
+    "pandoc_command": "pandoc /home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/main_clean_refs_hardcoded.tex --from=latex --to=docx --mathml --citeproc --csl=/home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/csl/apa-numbered.csl --bibliography=/home/ishanu/Dropbox/ZED/Research/latex2docx/example/zcor.bib --bibliography=/home/ishanu/Dropbox/ZED/Research/latex2docx/example/shap.bib --bibliography=/home/ishanu/Dropbox/ZED/Research/latex2docx/example/allbib.bib --bibliography=/home/ishanu/Dropbox/ZED/Research/latex2docx/example/jamacommentary.bib --bibliography=/home/ishanu/Dropbox/ZED/Research/latex2docx/example/methods.bib --bibliography=/home/ishanu/Dropbox/ZED/Research/latex2docx/example/sisa2.bib --bibliography=/home/ishanu/Dropbox/ZED/Research/latex2docx/example/spor.bib -o /home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/manuscript.docx",
+    "tables_docx": "created with pandoc from tables_standalone.tex",
+    "tables_pandoc_command": "pandoc /home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/tables_standalone.tex --from=latex --to=docx --mathml -o /home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/tables.docx",
+    "tables_pandoc_output": "",
+    "tables_parsed_docx": "created with python-docx"
+  },
+  "aux_log_tail": "in> \n                   \\relax \nl.66 \n      [1 <./Figures/zcorscheme1.png>]\npdfTeX warning (ext4): destination with the same identifier (name{page.2}) has \nbeen already used, duplicate ignored\n<to be read again> \n                   \\relax \nl.94 \n      [2]\n\nPackage natbib Warning: Citation `ke2017lightgbm' on page 3 undefined on input \nline 117.\n\n\nPackage natbib Warning: Citation `onishchenko2021reduced' on page 3 undefined o\nn input line 133.\n\n\nPackage natbib Warning: Citation `onishchenko2022screening' on page 3 undefined\n on input line 133.\n\n\nPackage natbib Warning: Citation `JAHA2022' on page 3 undefined on input line 1\n33.\n\n\nPackage natbib Warning: Citation `birnbaum1957bounds' on page 3 undefined on in\nput line 135.\n\n\nPackage natbib Warning: Citation `mann1947test' on page 3 undefined on input li\nne 135.\n\n\nPackage natbib Warning: Citation `wilcoxon1992individual' on page 3 undefined o\nn input line 135.\n\n\nPackage natbib Warning: Citation `newcombe1994confidence' on page 3 undefined o\nn input line 136.\n\n\nPackage natbib Warning: Citation `birnbaum2020use' on page 3 undefined on input\n line 136.\n\n\nPackage natbib Warning: Citation `vandantzig1951consistency' on page 3 undefine\nd on input line 136.\n\n\npdfTeX warning (ext4): destination with the same identifier (name{page.3}) has \nbeen already used, duplicate ignored\n<to be read again> \n                   \\relax \nl.140 \n       [3])\npdfTeX warning (ext4): destination with the same identifier (name{page.4}) has \nbeen already used, duplicate ignored\n<to be read again> \n                   \\relax \nl.522 \\include{zebramethods}\n                             [4]\nNo file figurestablesextrapredictionwindows.tex.\n\nPackage natbib Warning: There were undefined citations.\n\n\n(/home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/latex_au\nx/main.aux\n(/home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/latex_au\nx/zebramethods.aux)\n(/home/ishanu/Dropbox/ZED/Research/latex2docx/example/submission_build/latex_au\nx/figurestablesextrapredictionwindows.aux))\n\nLaTeX Warning: There were undefined references.\n\n )\n(see the transcript file for additional information)</usr/share/texlive/texmf-d\nist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fo\nnts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/ty\npe1/public/amsfonts/cm/cmmi5.pfb></usr/share/texlive/texmf-dist/fonts/type1/pub\nlic/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/ams\nfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/c\nm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9\n.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></\nusr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/shar\ne/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texliv\ne/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-\ndist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/f\nonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fonts/ty\npe1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/pub\nlic/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/ams\nfonts/cm/cmsy9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/s\nymbols/msam10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/sy\nmbols/msbm10.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/courier/ucrr8a.\npfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/sh\nare/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvbo8a.pfb></usr/share/texlive\n/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb>\nOutput written on /home/ishanu/Dropbox/ZED/Research/latex2docx/example/submissi\non_build/latex_aux/main.pdf (16 pages, 514660 bytes).\nTranscript written on /home/ishanu/Dropbox/ZED/Research/latex2docx/example/subm\nission_build/latex_aux/main.log.\n"
+}

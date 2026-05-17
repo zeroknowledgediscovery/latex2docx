@@ -1,0 +1,513 @@
+\begin{tikzpicture}[font=\bf\sffamily\fontsize{8}{8}\selectfont]
+
+\path[use as bounding box] (0in,-5.6in) rectangle (7.25in,0in);
+\clip (0in,-5.6in) rectangle (7.25in,0in);
+
+\def\PanelGap{-0.155in}
+\def\RowGap{-0.125in}
+\def\SOFTCLIP{}
+
+\def\DATA{plotdata/curves}
+\def\TEXTCOL{black}
+\def\WDT{1.95in}
+\def\HGT{1.95in}
+\def\CIOPACITY{0.18}
+\def\LabelSize{\Large}
+\def\AXISCOL{black!3}
+\def\AxisYShift{-0.2in}
+\def\TitleXShift{0.10in}
+
+\definecolor{ColorOrange}{RGB}{230,159,0}
+\definecolor{ColorBlue}{RGB}{0,114,178}
+\definecolor{ColorGreen}{RGB}{0,158,115}
+
+\def\COLORALL{black}
+\def\COLORPTSD{ColorOrange}
+\def\COLORTBI{ColorBlue}
+\def\COLORNOMDD{ColorGreen}
+
+% Younger, 25--50
+\def\FYOUNGERNOMDD{\DATA/SUICIDALITY-F2550-1M-No_MDD.csv}
+\def\FYOUNGERTBI{\DATA/SUICIDALITY-F2550-1M-TBI.csv}
+\def\FYOUNGERPTSD{\DATA/SUICIDALITY-F2550-1M-PTSD.csv}
+\def\FYOUNGERALL{\DATA/SUICIDALITY-F2550-1M-All_Patients.csv}
+
+\def\MYOUNGERNOMDD{\DATA/SUICIDALITY-M2550-1M-No_MDD.csv}
+\def\MYOUNGERTBI{\DATA/SUICIDALITY-M2550-1M-TBI.csv}
+\def\MYOUNGERPTSD{\DATA/SUICIDALITY-M2550-1M-PTSD.csv}
+\def\MYOUNGERALL{\DATA/SUICIDALITY-M2550-1M-All_Patients.csv}
+
+% Older, 50--75
+\def\FOLDERNOMDD{\DATA/SUICIDALITY-F5075-1M-No_MDD.csv}
+\def\FOLDERTBI{\DATA/SUICIDALITY-F5075-1M-TBI.csv}
+\def\FOLDERPTSD{\DATA/SUICIDALITY-F5075-1M-PTSD.csv}
+\def\FOLDERALL{\DATA/SUICIDALITY-F5075-1M-All_Patients.csv}
+
+\def\MOLDERNOMDD{\DATA/SUICIDALITY-M5075-1M-No_MDD.csv}
+\def\MOLDERTBI{\DATA/SUICIDALITY-M5075-1M-TBI.csv}
+\def\MOLDERPTSD{\DATA/SUICIDALITY-M5075-1M-PTSD.csv}
+\def\MOLDERALL{\DATA/SUICIDALITY-M5075-1M-All_Patients.csv}
+
+\newcommand{\PlotCurve}[5]{%
+\addplot [forget plot,name path=#4u,draw=none] table [col sep=comma,x=\XCOL,y=\YUP] {#1};
+\addplot [forget plot,name path=#4l,draw=none] table [col sep=comma,x=\XCOL,y=\YLO] {#1};
+\addplot [forget plot,fill=#2,opacity=\CIOPACITY] fill between [of=#4u and #4l,\SOFTCLIP];
+\addplot [draw=#2,very thick,#3] table [col sep=comma,x=\XCOL,y=\YCOL] {#1};
+#5
+}
+
+\node[] (Z) at (0,0) {};
+
+% ============================================================
+% a. ROC Curve - Males
+% ============================================================
+
+\node [anchor=north west, align=left] (A) at (0,0) {%
+\begin{tikzpicture}[anchor=center]
+\begin{axis}[
+legend cell align=left,
+text=\TEXTCOL,
+legend style={
+text=black, anchor=south east, at={(0.975,0.02)},
+inner sep=1pt, draw=none, fill=white, fill opacity=.15,
+align=left, text opacity=1,
+font=\bf\sffamily\fontsize{7}{7}\selectfont,
+row sep=-2pt,
+},
+clip=false,
+yshift=\AxisYShift,
+anchor=center,
+width=\WDT,
+height=\HGT,
+scale only axis=true,
+enlargelimits=false,
+axis on top=false,
+axis line style={\AXISCOL, very thick},
+grid=both,
+major grid style={opacity=.5,thick,black!40},
+minor grid style={opacity=.4,thin,black!20},
+xlabel style={yshift=.05in,text=\TEXTCOL},
+ylabel style={align=center,text=\TEXTCOL,anchor=center,yshift=-0.175in},
+ytick align=outside,
+xtick align=outside,
+major tick length=0pt,
+minor tick num=4,
+minor tick length=0pt,
+scaled y ticks=false,
+y tick label style={/pgf/number format/fixed,/pgf/number format/1000 sep=\thinspace},
+ylabel={Sensitivity},
+xlabel={1 - Specificity},
+xmin=0, xmax=1, ymin=0, ymax=1
+]
+
+\def\XCOL{fpr}
+\def\YCOL{tpr}
+\def\YUP{tpr_upper}
+\def\YLO{tpr_lower}
+\pgfplotstableset{columns/{\XCOL,\YCOL,\YUP,\YLO}/.style={string type}}
+
+\pgfplotstableread[col sep=comma]{\MYOUNGERALL}\YALL
+\pgfplotstableread[col sep=comma]{\MYOUNGERPTSD}\YPTSD
+\pgfplotstableread[col sep=comma]{\MYOUNGERTBI}\YTBI
+\pgfplotstableread[col sep=comma]{\MYOUNGERNOMDD}\YNOMDD
+
+\pgfplotstableread[col sep=comma]{\MOLDERALL}\OALL
+\pgfplotstableread[col sep=comma]{\MOLDERPTSD}\OPTSD
+\pgfplotstableread[col sep=comma]{\MOLDERTBI}\OTBI
+\pgfplotstableread[col sep=comma]{\MOLDERNOMDD}\ONOMDD
+
+\PlotCurve{\YALL}{\COLORALL}{}{ayalla}{\addlegendentry{All Patients, 25--50: 87.2$\pm$0.4\%}}
+\PlotCurve{\YPTSD}{\COLORPTSD}{}{ayptsda}{\addlegendentry{PTSD, 25--50: 82.2$\pm$1.7\%}}
+\PlotCurve{\YTBI}{\COLORTBI}{}{aytbia}{\addlegendentry{TBI, 25--50: 89.4$\pm$1.9\%}}
+\PlotCurve{\YNOMDD}{\COLORNOMDD}{}{aynomdda}{\addlegendentry{No MDD, 25--50: 81.0$\pm$0.6\%}}
+
+\PlotCurve{\OALL}{\COLORALL}{dashed}{aoalla}{\addlegendentry{All Patients, 50--75: 88.7$\pm$0.5\%}}
+\PlotCurve{\OPTSD}{\COLORPTSD}{dashed}{aoptsda}{\addlegendentry{PTSD, 50--75: 83.1$\pm$2.4\%}}
+\PlotCurve{\OTBI}{\COLORTBI}{dashed}{aotbia}{\addlegendentry{TBI, 50--75: 88.5$\pm$2.5\%}}
+\PlotCurve{\ONOMDD}{\COLORNOMDD}{dashed}{aonomdda}{\addlegendentry{No MDD, 50--75: 82.1$\pm$0.9\%}}
+
+\end{axis}
+\end{tikzpicture}
+};
+
+% ============================================================
+% b. PPV vs Sensitivity Curve - Males
+% ============================================================
+
+\node [anchor=south west, align=left] (B) at ([xshift=\PanelGap]A.south east) {%
+\begin{tikzpicture}[anchor=center]
+\begin{axis}[
+legend cell align=left,
+text=\TEXTCOL,
+legend style={
+text=black, anchor=south west, at={(0.05,0.02)},
+inner sep=1pt, draw=none, fill=gray!19, fill opacity=.25,
+align=left, text opacity=1,
+font=\bf\sffamily\fontsize{6}{4}\selectfont,
+row sep=-2pt,
+},
+legend image post style={xscale=0.5},
+clip=false,
+yshift=\AxisYShift,
+anchor=center,
+width=\WDT,
+height=\HGT,
+scale only axis=true,
+enlargelimits=false,
+axis on top=false,
+axis line style={\AXISCOL, very thick},
+grid=both,
+major grid style={opacity=.5,thick,black!40},
+minor grid style={opacity=.4,thin,black!20},
+xlabel style={yshift=.05in,text=\TEXTCOL},
+ylabel style={align=center,text=\TEXTCOL,anchor=center,yshift=-0.175in},
+ytick align=outside,
+xtick align=outside,
+extra y ticks={0},
+extra y tick labels={$0$},
+major tick length=0pt,
+minor tick num=4,
+minor tick length=0pt,
+scaled y ticks=false,
+y tick label style={/pgf/number format/fixed,/pgf/number format/1000 sep=\thinspace},
+ylabel={PPV},
+xlabel={Sensitivity},
+xmin=0, xmax=1, ymin=0, ymax=1
+]
+
+\def\XCOL{tpr}
+\def\YCOL{ppv}
+\def\YUP{ppv_upper}
+\def\YLO{ppv_lower}
+\pgfplotstableset{columns/{\XCOL,\YCOL,\YUP,\YLO}/.style={string type}}
+
+\pgfplotstableread[col sep=comma]{\MYOUNGERALL}\YALL
+\pgfplotstableread[col sep=comma]{\MYOUNGERPTSD}\YPTSD
+\pgfplotstableread[col sep=comma]{\MYOUNGERTBI}\YTBI
+\pgfplotstableread[col sep=comma]{\MYOUNGERNOMDD}\YNOMDD
+
+\pgfplotstableread[col sep=comma]{\MOLDERALL}\OALL
+\pgfplotstableread[col sep=comma]{\MOLDERPTSD}\OPTSD
+\pgfplotstableread[col sep=comma]{\MOLDERTBI}\OTBI
+\pgfplotstableread[col sep=comma]{\MOLDERNOMDD}\ONOMDD
+
+\PlotCurve{\YALL}{\COLORALL}{}{byalla}{}
+\PlotCurve{\YPTSD}{\COLORPTSD}{}{byptsda}{}
+\PlotCurve{\YTBI}{\COLORTBI}{}{bytbia}{}
+\PlotCurve{\YNOMDD}{\COLORNOMDD}{}{bynomdda}{}
+
+\PlotCurve{\OALL}{\COLORALL}{dashed}{boalla}{}
+\PlotCurve{\OPTSD}{\COLORPTSD}{dashed}{boptsda}{}
+\PlotCurve{\OTBI}{\COLORTBI}{dashed}{botbia}{}
+\PlotCurve{\ONOMDD}{\COLORNOMDD}{dashed}{bonomdda}{}
+
+\end{axis}
+\end{tikzpicture}
+};
+
+% ============================================================
+% c. Likelihood Ratio Curve - Males
+% ============================================================
+
+\node [anchor=south west, align=left] (C) at ([xshift=\PanelGap]B.south east) {%
+\begin{tikzpicture}[anchor=center]
+\begin{axis}[
+legend cell align=left,
+text=\TEXTCOL,
+legend style={
+text=black, anchor=north west, at={(0.02,0.98)},
+inner sep=1pt, draw=none, fill=gray!19, fill opacity=.25,
+align=left, text opacity=1,
+font=\bf\sffamily\fontsize{6}{4}\selectfont,
+row sep=-2pt,
+},
+legend image post style={xscale=0.5},
+clip=false,
+yshift=\AxisYShift,
+anchor=center,
+width=\WDT,
+height=\HGT,
+scale only axis=true,
+enlargelimits=false,
+axis on top=false,
+axis line style={\AXISCOL, very thick},
+grid=both,
+major grid style={opacity=.5,thick,black!40},
+minor grid style={opacity=.4,thin,black!20},
+xlabel style={yshift=.05in,text=\TEXTCOL},
+ylabel style={align=center,text=\TEXTCOL,anchor=center,yshift=-0.175in},
+extra y ticks={0},
+extra y tick labels={$0$},
+ytick align=outside,
+xtick align=outside,
+major tick length=0pt,
+minor tick num=4,
+minor tick length=0pt,
+scaled y ticks=false,
+y tick label style={/pgf/number format/fixed,/pgf/number format/1000 sep=\thinspace},
+ylabel={LR+},
+xlabel={LR-},
+ymin=0
+]
+
+\def\XCOL{LR-}
+\def\YCOL{LR+}
+\def\YUP{LR+_upper}
+\def\YLO{LR+_lower}
+\pgfplotstableset{columns/{\XCOL,\YCOL,\YUP,\YLO}/.style={string type}}
+
+\pgfplotstableread[col sep=comma]{\MYOUNGERALL}\YALL
+\pgfplotstableread[col sep=comma]{\MYOUNGERPTSD}\YPTSD
+\pgfplotstableread[col sep=comma]{\MYOUNGERTBI}\YTBI
+\pgfplotstableread[col sep=comma]{\MYOUNGERNOMDD}\YNOMDD
+
+\pgfplotstableread[col sep=comma]{\MOLDERALL}\OALL
+\pgfplotstableread[col sep=comma]{\MOLDERPTSD}\OPTSD
+\pgfplotstableread[col sep=comma]{\MOLDERTBI}\OTBI
+\pgfplotstableread[col sep=comma]{\MOLDERNOMDD}\ONOMDD
+
+\PlotCurve{\YALL}{\COLORALL}{}{cyalla}{}
+\PlotCurve{\YPTSD}{\COLORPTSD}{}{cyptsda}{}
+\PlotCurve{\YTBI}{\COLORTBI}{}{cytbia}{}
+\PlotCurve{\YNOMDD}{\COLORNOMDD}{}{cynomdda}{}
+
+\PlotCurve{\OALL}{\COLORALL}{dashed}{coalla}{}
+\PlotCurve{\OPTSD}{\COLORPTSD}{dashed}{coptsda}{}
+\PlotCurve{\OTBI}{\COLORTBI}{dashed}{cotbia}{}
+\PlotCurve{\ONOMDD}{\COLORNOMDD}{dashed}{conomdda}{}
+
+\end{axis}
+\end{tikzpicture}
+};
+
+% ============================================================
+% d. ROC Curve - Females
+% ============================================================
+
+\node [anchor=north west, align=left] (D) at ([yshift=\RowGap]A.south west) {%
+\begin{tikzpicture}[anchor=center]
+\begin{axis}[
+legend cell align=left,
+text=\TEXTCOL,
+legend style={
+text=black, anchor=south east, at={(0.975,0.02)},
+inner sep=1pt, draw=none, fill=white, fill opacity=.15,
+align=left, text opacity=1,
+font=\bf\sffamily\fontsize{7}{7}\selectfont,
+row sep=-2pt,
+},
+clip=false,
+yshift=\AxisYShift,
+anchor=center,
+width=\WDT,
+height=\HGT,
+scale only axis=true,
+enlargelimits=false,
+axis on top=false,
+axis line style={\AXISCOL, very thick},
+grid=both,
+major grid style={opacity=.5,thick,black!40},
+minor grid style={opacity=.4,thin,black!20},
+xlabel style={yshift=.05in,text=\TEXTCOL},
+ylabel style={align=center,text=\TEXTCOL,anchor=center,yshift=-0.175in},
+ytick align=outside,
+xtick align=outside,
+major tick length=0pt,
+minor tick num=4,
+minor tick length=0pt,
+scaled y ticks=false,
+y tick label style={/pgf/number format/fixed,/pgf/number format/1000 sep=\thinspace},
+ylabel={Sensitivity},
+xlabel={1 - Specificity},
+xmin=0, xmax=1, ymin=0, ymax=1
+]
+
+\def\XCOL{fpr}
+\def\YCOL{tpr}
+\def\YUP{tpr_upper}
+\def\YLO{tpr_lower}
+\pgfplotstableset{columns/{\XCOL,\YCOL,\YUP,\YLO}/.style={string type}}
+
+\pgfplotstableread[col sep=comma]{\FYOUNGERALL}\YALL
+\pgfplotstableread[col sep=comma]{\FYOUNGERPTSD}\YPTSD
+\pgfplotstableread[col sep=comma]{\FYOUNGERTBI}\YTBI
+\pgfplotstableread[col sep=comma]{\FYOUNGERNOMDD}\YNOMDD
+
+\pgfplotstableread[col sep=comma]{\FOLDERALL}\OALL
+\pgfplotstableread[col sep=comma]{\FOLDERPTSD}\OPTSD
+\pgfplotstableread[col sep=comma]{\FOLDERTBI}\OTBI
+\pgfplotstableread[col sep=comma]{\FOLDERNOMDD}\ONOMDD
+
+\PlotCurve{\YALL}{\COLORALL}{}{dyalla}{\addlegendentry{All Patients, 25--50: 89.6$\pm$0.3\%}}
+\PlotCurve{\YPTSD}{\COLORPTSD}{}{dyptsda}{\addlegendentry{PTSD, 25--50: 82.5$\pm$1.0\%}}
+\PlotCurve{\YTBI}{\COLORTBI}{}{dytbia}{\addlegendentry{TBI, 25--50: 87.8$\pm$1.7\%}}
+\PlotCurve{\YNOMDD}{\COLORNOMDD}{}{dynomdda}{\addlegendentry{No MDD, 25--50: 83.6$\pm$0.5\%}}
+
+\PlotCurve{\OALL}{\COLORALL}{dashed}{doalla}{\addlegendentry{All Patients, 50--75: 91.0$\pm$0.4\%}}
+\PlotCurve{\OPTSD}{\COLORPTSD}{dashed}{doptsda}{\addlegendentry{PTSD, 50--75: 83.8$\pm$1.9\%}}
+\PlotCurve{\OTBI}{\COLORTBI}{dashed}{dotbia}{\addlegendentry{TBI, 50--75: 90.4$\pm$1.9\%}}
+\PlotCurve{\ONOMDD}{\COLORNOMDD}{dashed}{donomdda}{\addlegendentry{No MDD, 50--75: 84.8$\pm$0.9\%}}
+
+\end{axis}
+\end{tikzpicture}
+};
+
+% ============================================================
+% e. PPV vs Sensitivity Curve - Females
+% ============================================================
+
+\node [anchor=south west, align=left] (E) at ([xshift=\PanelGap]D.south east) {%
+\begin{tikzpicture}[anchor=center]
+\begin{axis}[
+legend cell align=left,
+text=\TEXTCOL,
+legend style={
+text=black, anchor=south west, at={(0.05,0.02)},
+inner sep=1pt, draw=none, fill=gray!19, fill opacity=.25,
+align=left, text opacity=1,
+font=\bf\sffamily\fontsize{6}{4}\selectfont,
+row sep=-2pt,
+},
+legend image post style={xscale=0.5},
+clip=false,
+yshift=\AxisYShift,
+anchor=center,
+width=\WDT,
+height=\HGT,
+scale only axis=true,
+enlargelimits=false,
+axis on top=false,
+axis line style={\AXISCOL, very thick},
+grid=both,
+major grid style={opacity=.5,thick,black!40},
+minor grid style={opacity=.4,thin,black!20},
+xlabel style={yshift=.05in,text=\TEXTCOL},
+ylabel style={align=center,text=\TEXTCOL,anchor=center,yshift=-0.175in},
+ytick align=outside,
+xtick align=outside,
+extra y ticks={0},
+extra y tick labels={$0$},
+major tick length=0pt,
+minor tick num=4,
+minor tick length=0pt,
+scaled y ticks=false,
+y tick label style={/pgf/number format/fixed,/pgf/number format/1000 sep=\thinspace},
+ylabel={PPV},
+xlabel={Sensitivity},
+xmin=0, xmax=1, ymin=0, ymax=1
+]
+
+\def\XCOL{tpr}
+\def\YCOL{ppv}
+\def\YUP{ppv_upper}
+\def\YLO{ppv_lower}
+\pgfplotstableset{columns/{\XCOL,\YCOL,\YUP,\YLO}/.style={string type}}
+
+\pgfplotstableread[col sep=comma]{\FYOUNGERALL}\YALL
+\pgfplotstableread[col sep=comma]{\FYOUNGERPTSD}\YPTSD
+\pgfplotstableread[col sep=comma]{\FYOUNGERTBI}\YTBI
+\pgfplotstableread[col sep=comma]{\FYOUNGERNOMDD}\YNOMDD
+
+\pgfplotstableread[col sep=comma]{\FOLDERALL}\OALL
+\pgfplotstableread[col sep=comma]{\FOLDERPTSD}\OPTSD
+\pgfplotstableread[col sep=comma]{\FOLDERTBI}\OTBI
+\pgfplotstableread[col sep=comma]{\FOLDERNOMDD}\ONOMDD
+
+\PlotCurve{\YALL}{\COLORALL}{}{eyalla}{}
+\PlotCurve{\YPTSD}{\COLORPTSD}{}{eyptsda}{}
+\PlotCurve{\YTBI}{\COLORTBI}{}{eytbia}{}
+\PlotCurve{\YNOMDD}{\COLORNOMDD}{}{eynomdda}{}
+
+\PlotCurve{\OALL}{\COLORALL}{dashed}{eoalla}{}
+\PlotCurve{\OPTSD}{\COLORPTSD}{dashed}{eoptsda}{}
+\PlotCurve{\OTBI}{\COLORTBI}{dashed}{eotbia}{}
+\PlotCurve{\ONOMDD}{\COLORNOMDD}{dashed}{eonomdda}{}
+
+\end{axis}
+\end{tikzpicture}
+};
+
+% ============================================================
+% f. Likelihood Ratio Curve - Females
+% ============================================================
+
+\node [anchor=south west, align=left] (F) at ([xshift=\PanelGap]E.south east) {%
+\begin{tikzpicture}[anchor=center]
+\begin{axis}[
+legend cell align=left,
+text=\TEXTCOL,
+legend style={
+text=black, anchor=north west, at={(0.02,0.98)},
+inner sep=1pt, draw=none, fill=gray!19, fill opacity=.25,
+align=left, text opacity=1,
+font=\bf\sffamily\fontsize{6}{4}\selectfont,
+row sep=-2pt,
+},
+legend image post style={xscale=0.5},
+clip=false,
+yshift=\AxisYShift,
+anchor=center,
+width=\WDT,
+height=\HGT,
+scale only axis=true,
+enlargelimits=false,
+axis on top=false,
+axis line style={\AXISCOL, very thick},
+grid=both,
+major grid style={opacity=.5,thick,black!40},
+minor grid style={opacity=.4,thin,black!20},
+xlabel style={yshift=.05in,text=\TEXTCOL},
+ylabel style={align=center,text=\TEXTCOL,anchor=center,yshift=-0.175in},
+extra y ticks={0},
+extra y tick labels={$0$},
+ytick align=outside,
+xtick align=outside,
+major tick length=0pt,
+minor tick num=4,
+minor tick length=0pt,
+scaled y ticks=false,
+y tick label style={/pgf/number format/fixed,/pgf/number format/1000 sep=\thinspace},
+ylabel={LR+},
+xlabel={LR-},
+ymin=0
+]
+
+\def\XCOL{LR-}
+\def\YCOL{LR+}
+\def\YUP{LR+_upper}
+\def\YLO{LR+_lower}
+\pgfplotstableset{columns/{\XCOL,\YCOL,\YUP,\YLO}/.style={string type}}
+
+\pgfplotstableread[col sep=comma]{\FYOUNGERALL}\YALL
+\pgfplotstableread[col sep=comma]{\FYOUNGERPTSD}\YPTSD
+\pgfplotstableread[col sep=comma]{\FYOUNGERTBI}\YTBI
+\pgfplotstableread[col sep=comma]{\FYOUNGERNOMDD}\YNOMDD
+
+\pgfplotstableread[col sep=comma]{\FOLDERALL}\OALL
+\pgfplotstableread[col sep=comma]{\FOLDERPTSD}\OPTSD
+\pgfplotstableread[col sep=comma]{\FOLDERTBI}\OTBI
+\pgfplotstableread[col sep=comma]{\FOLDERNOMDD}\ONOMDD
+
+\PlotCurve{\YALL}{\COLORALL}{}{fyalla}{}
+\PlotCurve{\YPTSD}{\COLORPTSD}{}{fyptsda}{}
+\PlotCurve{\YTBI}{\COLORTBI}{}{fytbia}{}
+\PlotCurve{\YNOMDD}{\COLORNOMDD}{}{fynomdda}{}
+
+\PlotCurve{\OALL}{\COLORALL}{dashed}{foalla}{}
+\PlotCurve{\OPTSD}{\COLORPTSD}{dashed}{foptsda}{}
+\PlotCurve{\OTBI}{\COLORTBI}{dashed}{fotbia}{}
+\PlotCurve{\ONOMDD}{\COLORNOMDD}{dashed}{fonomdda}{}
+
+\end{axis}
+\end{tikzpicture}
+};
+
+\node[anchor=south west, xshift=\TitleXShift] at ([yshift=-.275in]A.north west) {{\LabelSize a.} ROC Curve - Males};
+\node[anchor=south west, xshift=\TitleXShift] at ([yshift=-.3in]B.north west) {{\LabelSize b.} PPV vs Sensitivity Curve - Males};
+\node[anchor=south west, xshift=\TitleXShift] at ([yshift=-.21in]C.north west) {{\LabelSize c.} Likelihood Ratio Curve - Males};
+
+\node[anchor=south west, xshift=\TitleXShift] at ([yshift=-.275in]D.north west) {{\LabelSize d.} ROC Curve - Females};
+\node[anchor=south west, xshift=\TitleXShift] at ([yshift=-.3in]E.north west) {{\LabelSize e.} PPV vs Sensitivity Curve - Females};
+\node[anchor=south west, xshift=\TitleXShift] at ([yshift=-.21in]F.north west) {{\LabelSize f.} Likelihood Ratio Curve - Females};
+
+\end{tikzpicture}

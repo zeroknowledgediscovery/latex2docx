@@ -1,0 +1,581 @@
+\begin{tikzpicture}[font=\bf\sffamily\fontsize{8}{8}\selectfont]
+
+  % --- clip to the region actually used by the 6 panels ---
+ % \clip (0in,-11.2in) rectangle (7.25in,1.8in);
+
+  \path[use as bounding box] (0in,-5.6in) rectangle (7.25in,0in);
+\clip (0in,-5.6in) rectangle (7.25in,0in);
+
+% ---- layout helpers ----
+\def\PanelGap{-0.155in}
+\def\RowGap{-0.125in}
+\def\SOFTCLIP{}
+
+\def\DATA{plotdata/curves}
+\def\TEXTCOL{gray}
+\def\WDT{1.95in}
+\def\HGT{1.95in}
+\def\CIOPACITY{0.25}
+\def\LabelSize{\Large}
+\def\AXISCOL{lightgray}
+\def\AxisYShift{-0.2in}
+\def\TitleXShift{0.10in}
+
+\node[] (Z) at (0,0) {};
+
+%#############################################################
+%%% COLORS (define once only)                              %%%
+%#############################################################
+\def\COLORALL{black}
+\def\COLORPTSD{red}
+\def\COLORTBI{blue}
+\def\COLORNOMDD{green}
+
+%#############################################################
+%%% SOURCES (concise systematic names)                     %%%
+%#############################################################
+\def\FYOUNGERNOMDD{\DATA/SUICIDALITY-F2550-1W-No_MDD.csv}
+\def\FYOUNGERTBI{\DATA/SUICIDALITY-F2550-1W-TBI.csv}
+\def\FYOUNGERPTSD{\DATA/SUICIDALITY-F2550-1W-PTSD.csv}
+\def\FYOUNGERALL{\DATA/SUICIDALITY-F2550-1W-All_Patients.csv}
+
+\def\MYOUNGERNOMDD{\DATA/SUICIDALITY-M2550-1W-No_MDD.csv}
+\def\MYOUNGERTBI{\DATA/SUICIDALITY-M2550-1W-TBI.csv}
+\def\MYOUNGERPTSD{\DATA/SUICIDALITY-M2550-1W-PTSD.csv}
+\def\MYOUNGERALL{\DATA/SUICIDALITY-M2550-1W-All_Patients.csv}
+
+
+% ============================================================
+% ===================== SUBPLOT a ============================
+% ======================== ROC ===============================
+% ============================================================
+
+\node [anchor=north west, align=left] (A) at (0,0) {%
+\begin{tikzpicture}[anchor=center]
+  \begin{axis}[
+      legend cell align=left,
+      text=\TEXTCOL,
+      legend style={
+        text=black,
+        anchor=south east, at={(0.98,0.02)},
+        inner sep=1pt, draw=none,
+        fill=white, fill opacity=.15,
+        align=left, text opacity=1,
+        font=\bf\sffamily\fontsize{8}{8}\selectfont,
+        row sep=-2pt,
+      },
+      clip=false,
+      yshift=\AxisYShift,
+      anchor=center,
+      width=\WDT,
+      height=\HGT,
+      scale only axis=true,
+      enlargelimits=false,
+      axis on top=false,
+      axis line style={\AXISCOL, very thick},
+      grid=both,
+      major grid style={opacity=.5,thick,black!40},
+      minor grid style={opacity=.4,thin,black!20},
+      xlabel style={yshift=.05in,text=\TEXTCOL},
+      ylabel style={align=center,text=\TEXTCOL,anchor=center,yshift=-0.175in},
+      ytick align=outside,
+      xtick align=outside,
+      major tick length=0pt,
+      minor tick num=4,
+      minor tick length=0pt,
+      scaled y ticks=false,
+      y tick label style={/pgf/number format/fixed,/pgf/number format/1000 sep=\thinspace},
+      ylabel={Sensitivity},
+      xlabel={1 - Specificity},
+      xmin=0, xmax=1, ymax=1
+    ]
+
+\def\XCOL{fpr}
+\def\YCOL{tpr}
+\def\YUP{tpr_upper}
+\def\YLO{tpr_lower}
+\pgfplotstableset{columns/{\XCOL,\YCOL,\YUP,\YLO}/.style={string type}}
+
+\pgfplotstableread[col sep=comma]{\MYOUNGERALL}\ALL
+\pgfplotstableread[col sep=comma]{\MYOUNGERPTSD}\PTSD
+\pgfplotstableread[col sep=comma]{\MYOUNGERTBI}\TBI
+\pgfplotstableread[col sep=comma]{\MYOUNGERNOMDD}\NOMDD
+
+% All Patients
+\addplot [forget plot,name path=a1u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\ALL};
+\addplot [forget plot,name path=a1l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\ALL};
+\addplot [forget plot, fill=\COLORALL, opacity=\CIOPACITY] fill between [of=a1u and a1l, \SOFTCLIP];
+\addplot [draw=\COLORALL, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\ALL};
+\addlegendentry{All Patients: 88.3$\pm$0.4\%}
+
+% PTSD
+\addplot [forget plot,name path=a2u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\PTSD};
+\addplot [forget plot,name path=a2l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\PTSD};
+\addplot [forget plot, fill=\COLORPTSD, opacity=\CIOPACITY] fill between [of=a2u and a2l, \SOFTCLIP];
+\addplot [draw=\COLORPTSD, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\PTSD};
+\addlegendentry{PTSD: 82.9$\pm$1.6\%}
+
+% TBI
+\addplot [forget plot,name path=a3u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\TBI};
+\addplot [forget plot,name path=a3l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\TBI};
+\addplot [forget plot, fill=\COLORTBI, opacity=\CIOPACITY] fill between [of=a3u and a3l, \SOFTCLIP];
+\addplot [draw=\COLORTBI, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\TBI};
+\addlegendentry{TBI: 89.6$\pm$1.8\%}
+
+% No MDD
+\addplot [forget plot,name path=a4u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\NOMDD};
+\addplot [forget plot,name path=a4l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\NOMDD};
+\addplot [forget plot, fill=\COLORNOMDD, opacity=\CIOPACITY] fill between [of=a4u and a4l, \SOFTCLIP];
+\addplot [draw=\COLORNOMDD, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\NOMDD};
+\addlegendentry{No MDD: 82.0$\pm$0.6\%}
+
+  \end{axis}
+\end{tikzpicture}
+};
+
+% ============================================================
+% ===================== SUBPLOT b ============================
+% ================= PPV vs Sensitivity =======================
+% ============================================================
+
+\node [anchor=south west, align=left] (B) at ([xshift=\PanelGap]A.south east) {%
+\begin{tikzpicture}[anchor=center]
+  \begin{axis}[
+      legend cell align=left,
+      text=\TEXTCOL,
+      legend style={
+        text=black,
+        anchor=south west, at={(0.05,0.02)},
+        inner sep=1pt, draw=none,
+        fill=gray!19, fill opacity=.25,
+        align=left, text opacity=1,
+        font=\bf\sffamily\fontsize{6}{4}\selectfont,
+        row sep=-2pt,
+      },
+      legend image post style={xscale=0.5},
+      clip=false,
+      yshift=\AxisYShift,
+      anchor=center,
+      width=\WDT,
+      height=\HGT,
+      scale only axis=true,
+      enlargelimits=false,
+      axis on top=false,
+      axis line style={\AXISCOL, very thick},
+      grid=both,
+      major grid style={opacity=.5,thick,black!40},
+      minor grid style={opacity=.4,thin,black!20},
+      xlabel style={yshift=.05in,text=\TEXTCOL},
+      ylabel style={align=center,text=\TEXTCOL,anchor=center,yshift=-0.175in},
+      ytick align=outside,
+      xtick align=outside,
+      extra y ticks={0},
+      extra y tick labels={$0$},
+      major tick length=0pt,
+      minor tick num=4,
+      minor tick length=0pt,
+      scaled y ticks=false,
+      y tick label style={/pgf/number format/fixed,/pgf/number format/1000 sep=\thinspace},
+      ylabel={PPV},
+      xlabel={Sensitivity},
+      xmin=0, xmax=1, ymin=0, ymax=1
+    ]
+
+\def\XCOL{tpr}
+\def\YCOL{ppv}
+\def\YUP{ppv_upper}
+\def\YLO{ppv_lower}
+\pgfplotstableset{columns/{\XCOL,\YCOL,\YUP,\YLO}/.style={string type}}
+
+\pgfplotstableread[col sep=comma]{\MYOUNGERALL}\ALL
+\pgfplotstableread[col sep=comma]{\MYOUNGERPTSD}\PTSD
+\pgfplotstableread[col sep=comma]{\MYOUNGERTBI}\TBI
+\pgfplotstableread[col sep=comma]{\MYOUNGERNOMDD}\NOMDD
+
+% All Patients
+\addplot [forget plot,name path=b1u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\ALL};
+\addplot [forget plot,name path=b1l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\ALL};
+\addplot [forget plot, fill=\COLORALL, opacity=\CIOPACITY] fill between [of=b1u and b1l, \SOFTCLIP];
+\addplot [draw=\COLORALL, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\ALL};
+
+% PTSD
+\addplot [forget plot,name path=b2u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\PTSD};
+\addplot [forget plot,name path=b2l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\PTSD};
+\addplot [forget plot, fill=\COLORPTSD, opacity=\CIOPACITY] fill between [of=b2u and b2l, \SOFTCLIP];
+\addplot [draw=\COLORPTSD, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\PTSD};
+
+% TBI
+\addplot [forget plot,name path=b3u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\TBI};
+\addplot [forget plot,name path=b3l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\TBI};
+\addplot [forget plot, fill=\COLORTBI, opacity=\CIOPACITY] fill between [of=b3u and b3l, \SOFTCLIP];
+\addplot [draw=\COLORTBI, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\TBI};
+
+% No MDD
+\addplot [forget plot,name path=b4u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\NOMDD};
+\addplot [forget plot,name path=b4l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\NOMDD};
+\addplot [forget plot, fill=\COLORNOMDD, opacity=\CIOPACITY] fill between [of=b4u and b4l, \SOFTCLIP];
+\addplot [draw=\COLORNOMDD, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\NOMDD};
+
+  \end{axis}
+\end{tikzpicture}
+};
+
+% ============================================================
+% ===================== SUBPLOT c ============================
+% ==================== Likelihood Ratio ======================
+% ============================================================
+
+\node [anchor=south west, align=left] (C) at ([xshift=\PanelGap]B.south east) {%
+\begin{tikzpicture}[anchor=center]
+  \begin{axis}[
+      legend cell align=left,
+      text=\TEXTCOL,
+      legend style={
+        text=black,
+        anchor=north west, at={(0.02,0.98)},
+        inner sep=1pt, draw=none,
+        fill=gray!19, fill opacity=.25,
+        align=left, text opacity=1,
+        font=\bf\sffamily\fontsize{6}{4}\selectfont,
+        row sep=-2pt,
+      },
+      legend image post style={xscale=0.5},
+      clip=false,
+      yshift=\AxisYShift,
+      anchor=center,
+      width=\WDT,
+      height=\HGT,
+      scale only axis=true,
+      enlargelimits=false,
+      axis on top=false,
+      axis line style={\AXISCOL, very thick},
+      grid=both,
+      major grid style={opacity=.5,thick,black!40},
+      minor grid style={opacity=.4,thin,black!20},
+      xlabel style={yshift=.05in,text=\TEXTCOL},
+      ylabel style={align=center,text=\TEXTCOL,anchor=center,yshift=-0.175in},
+      extra y ticks={0},
+      extra y tick labels={$0$},
+      ytick align=outside,
+      xtick align=outside,
+      major tick length=0pt,
+      minor tick num=4,
+      minor tick length=0pt,
+      scaled y ticks=false,
+      y tick label style={/pgf/number format/fixed,/pgf/number format/1000 sep=\thinspace},
+      ylabel={LR+},
+      xlabel={LR-},
+      ymin=0
+    ]
+
+\def\XCOL{LR-}
+\def\YCOL{LR+}
+\def\YUP{LR+_upper}
+\def\YLO{LR+_lower}
+\pgfplotstableset{columns/{\XCOL,\YCOL,\YUP,\YLO}/.style={string type}}
+
+\pgfplotstableread[col sep=comma]{\MYOUNGERALL}\ALL
+\pgfplotstableread[col sep=comma]{\MYOUNGERPTSD}\PTSD
+\pgfplotstableread[col sep=comma]{\MYOUNGERTBI}\TBI
+\pgfplotstableread[col sep=comma]{\MYOUNGERNOMDD}\NOMDD
+
+% All Patients
+\addplot [forget plot,name path=c1u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\ALL};
+\addplot [forget plot,name path=c1l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\ALL};
+\addplot [forget plot, fill=\COLORALL, opacity=\CIOPACITY] fill between [of=c1u and c1l, \SOFTCLIP];
+\addplot [draw=\COLORALL, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\ALL};
+
+% PTSD
+\addplot [forget plot,name path=c2u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\PTSD};
+\addplot [forget plot,name path=c2l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\PTSD};
+\addplot [forget plot, fill=\COLORPTSD, opacity=\CIOPACITY] fill between [of=c2u and c2l, \SOFTCLIP];
+\addplot [draw=\COLORPTSD, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\PTSD};
+
+% TBI
+\addplot [forget plot,name path=c3u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\TBI};
+\addplot [forget plot,name path=c3l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\TBI};
+\addplot [forget plot, fill=\COLORTBI, opacity=\CIOPACITY] fill between [of=c3u and c3l, \SOFTCLIP];
+\addplot [draw=\COLORTBI, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\TBI};
+
+% No MDD
+\addplot [forget plot,name path=c4u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\NOMDD};
+\addplot [forget plot,name path=c4l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\NOMDD};
+\addplot [forget plot, fill=\COLORNOMDD, opacity=\CIOPACITY] fill between [of=c4u and c4l, \SOFTCLIP];
+\addplot [draw=\COLORNOMDD, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\NOMDD};
+
+  \end{axis}
+\end{tikzpicture}
+};
+
+% ============================================================
+% ===================== SUBPLOT d ============================
+% ======================== ROC ===============================
+% ============================================================
+
+\node [anchor=north west, align=left] (D) at ([yshift=\RowGap]A.south west) {%
+\begin{tikzpicture}[anchor=center]
+  \begin{axis}[
+      legend cell align=left,
+      text=\TEXTCOL,
+      legend style={
+        text=black,
+        anchor=south east, at={(0.98,0.02)},
+        inner sep=1pt, draw=none,
+        fill=white, fill opacity=.15,
+        align=left, text opacity=1,
+        font=\bf\sffamily\fontsize{8}{8}\selectfont,
+        row sep=-2pt,
+      },
+      clip=false,
+      yshift=\AxisYShift,
+      anchor=center,
+      width=\WDT,
+      height=\HGT,
+      scale only axis=true,
+      enlargelimits=false,
+      axis on top=false,
+      axis line style={\AXISCOL, very thick},
+      grid=both,
+      major grid style={opacity=.5,thick,black!40},
+      minor grid style={opacity=.4,thin,black!20},
+      xlabel style={yshift=.05in,text=\TEXTCOL},
+      ylabel style={align=center,text=\TEXTCOL,anchor=center,yshift=-0.175in},
+      ytick align=outside,
+      xtick align=outside,
+      major tick length=0pt,
+      minor tick num=4,
+      minor tick length=0pt,
+      scaled y ticks=false,
+      y tick label style={/pgf/number format/fixed,/pgf/number format/1000 sep=\thinspace},
+      ylabel={Sensitivity},
+      xlabel={1 - Specificity},
+      xmin=0, xmax=1, ymax=1
+    ]
+
+\def\XCOL{fpr}
+\def\YCOL{tpr}
+\def\YUP{tpr_upper}
+\def\YLO{tpr_lower}
+\pgfplotstableset{columns/{\XCOL,\YCOL,\YUP,\YLO}/.style={string type}}
+
+\pgfplotstableread[col sep=comma]{\FYOUNGERALL}\ALL
+\pgfplotstableread[col sep=comma]{\FYOUNGERPTSD}\PTSD
+\pgfplotstableread[col sep=comma]{\FYOUNGERTBI}\TBI
+\pgfplotstableread[col sep=comma]{\FYOUNGERNOMDD}\NOMDD
+
+% All Patients
+\addplot [forget plot,name path=d1u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\ALL};
+\addplot [forget plot,name path=d1l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\ALL};
+\addplot [forget plot, fill=\COLORALL, opacity=\CIOPACITY] fill between [of=d1u and d1l, \SOFTCLIP];
+\addplot [draw=\COLORALL, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\ALL};
+\addlegendentry{All Patients: 90.5$\pm$0.2\%}
+
+% PTSD
+\addplot [forget plot,name path=d2u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\PTSD};
+\addplot [forget plot,name path=d2l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\PTSD};
+\addplot [forget plot, fill=\COLORPTSD, opacity=\CIOPACITY] fill between [of=d2u and d2l, \SOFTCLIP];
+\addplot [draw=\COLORPTSD, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\PTSD};
+\addlegendentry{PTSD: 83.1$\pm$0.9\%}
+
+% TBI
+\addplot [forget plot,name path=d3u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\TBI};
+\addplot [forget plot,name path=d3l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\TBI};
+\addplot [forget plot, fill=\COLORTBI, opacity=\CIOPACITY] fill between [of=d3u and d3l, \SOFTCLIP];
+\addplot [draw=\COLORTBI, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\TBI};
+\addlegendentry{TBI: 88.8$\pm$1.5\%}
+
+% No MDD
+\addplot [forget plot,name path=d4u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\NOMDD};
+\addplot [forget plot,name path=d4l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\NOMDD};
+\addplot [forget plot, fill=\COLORNOMDD, opacity=\CIOPACITY] fill between [of=d4u and d4l, \SOFTCLIP];
+\addplot [draw=\COLORNOMDD, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\NOMDD};
+\addlegendentry{No MDD: 84.5$\pm$0.5\%}
+
+  \end{axis}
+\end{tikzpicture}
+};
+
+% ============================================================
+% ===================== SUBPLOT e ============================
+% ================= PPV vs Sensitivity =======================
+% ============================================================
+
+\node [anchor=south west, align=left] (E) at ([xshift=\PanelGap]D.south east) {%
+\begin{tikzpicture}[anchor=center]
+  \begin{axis}[
+      legend cell align=left,
+      text=\TEXTCOL,
+      legend style={
+        text=black,
+        anchor=south west, at={(0.05,0.02)},
+        inner sep=1pt, draw=none,
+        fill=gray!19, fill opacity=.25,
+        align=left, text opacity=1,
+        font=\bf\sffamily\fontsize{6}{4}\selectfont,
+        row sep=-2pt,
+      },
+      legend image post style={xscale=0.5},
+      clip=false,
+      yshift=\AxisYShift,
+      anchor=center,
+      width=\WDT,
+      height=\HGT,
+      scale only axis=true,
+      enlargelimits=false,
+      axis on top=false,
+      axis line style={\AXISCOL, very thick},
+      grid=both,
+      major grid style={opacity=.5,thick,black!40},
+      minor grid style={opacity=.4,thin,black!20},
+      xlabel style={yshift=.05in,text=\TEXTCOL},
+      ylabel style={align=center,text=\TEXTCOL,anchor=center,yshift=-0.175in},
+      ytick align=outside,
+      xtick align=outside,
+      extra y ticks={0},
+      extra y tick labels={$0$},
+      major tick length=0pt,
+      minor tick num=4,
+      minor tick length=0pt,
+      scaled y ticks=false,
+      y tick label style={/pgf/number format/fixed,/pgf/number format/1000 sep=\thinspace},
+      ylabel={PPV},
+      xlabel={Sensitivity},
+      xmin=0, xmax=1, ymin=0, ymax=1
+    ]
+
+\def\XCOL{tpr}
+\def\YCOL{ppv}
+\def\YUP{ppv_upper}
+\def\YLO{ppv_lower}
+\pgfplotstableset{columns/{\XCOL,\YCOL,\YUP,\YLO}/.style={string type}}
+
+\pgfplotstableread[col sep=comma]{\FYOUNGERALL}\ALL
+\pgfplotstableread[col sep=comma]{\FYOUNGERPTSD}\PTSD
+\pgfplotstableread[col sep=comma]{\FYOUNGERTBI}\TBI
+\pgfplotstableread[col sep=comma]{\FYOUNGERNOMDD}\NOMDD
+
+% All Patients
+\addplot [forget plot,name path=e1u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\ALL};
+\addplot [forget plot,name path=e1l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\ALL};
+\addplot [forget plot, fill=\COLORALL, opacity=\CIOPACITY] fill between [of=e1u and e1l, \SOFTCLIP];
+\addplot [draw=\COLORALL, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\ALL};
+
+% PTSD
+\addplot [forget plot,name path=e2u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\PTSD};
+\addplot [forget plot,name path=e2l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\PTSD};
+\addplot [forget plot, fill=\COLORPTSD, opacity=\CIOPACITY] fill between [of=e2u and e2l, \SOFTCLIP];
+\addplot [draw=\COLORPTSD, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\PTSD};
+
+% TBI
+\addplot [forget plot,name path=e3u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\TBI};
+\addplot [forget plot,name path=e3l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\TBI};
+\addplot [forget plot, fill=\COLORTBI, opacity=\CIOPACITY] fill between [of=e3u and e3l, \SOFTCLIP];
+\addplot [draw=\COLORTBI, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\TBI};
+
+% No MDD
+\addplot [forget plot,name path=e4u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\NOMDD};
+\addplot [forget plot,name path=e4l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\NOMDD};
+\addplot [forget plot, fill=\COLORNOMDD, opacity=\CIOPACITY] fill between [of=e4u and e4l, \SOFTCLIP];
+\addplot [draw=\COLORNOMDD, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\NOMDD};
+
+  \end{axis}
+\end{tikzpicture}
+};
+
+% ============================================================
+% ===================== SUBPLOT f ============================
+% ==================== Likelihood Ratio ======================
+% ============================================================
+
+\node [anchor=south west, align=left] (F) at ([xshift=\PanelGap]E.south east) {%
+\begin{tikzpicture}[anchor=center]
+  \begin{axis}[
+      legend cell align=left,
+      text=\TEXTCOL,
+      legend style={
+        text=black,
+        anchor=north west, at={(0.02,0.98)},
+        inner sep=1pt, draw=none,
+        fill=gray!19, fill opacity=.25,
+        align=left, text opacity=1,
+        font=\bf\sffamily\fontsize{6}{4}\selectfont,
+        row sep=-2pt,
+      },
+      legend image post style={xscale=0.5},
+      clip=false,
+      yshift=\AxisYShift,
+      anchor=center,
+      width=\WDT,
+      height=\HGT,
+      scale only axis=true,
+      enlargelimits=false,
+      axis on top=false,
+      axis line style={\AXISCOL, very thick},
+      grid=both,
+      major grid style={opacity=.5,thick,black!40},
+      minor grid style={opacity=.4,thin,black!20},
+      xlabel style={yshift=.05in,text=\TEXTCOL},
+      ylabel style={align=center,text=\TEXTCOL,anchor=center,yshift=-0.175in},
+      extra y ticks={0},
+      extra y tick labels={$0$},
+      ytick align=outside,
+      xtick align=outside,
+      major tick length=0pt,
+      minor tick num=4,
+      minor tick length=0pt,
+      scaled y ticks=false,
+      y tick label style={/pgf/number format/fixed,/pgf/number format/1000 sep=\thinspace},
+      ylabel={LR+},
+      xlabel={LR-},
+      ymin=0
+    ]
+
+\def\XCOL{LR-}
+\def\YCOL{LR+}
+\def\YUP{LR+_upper}
+\def\YLO{LR+_lower}
+\pgfplotstableset{columns/{\XCOL,\YCOL,\YUP,\YLO}/.style={string type}}
+
+\pgfplotstableread[col sep=comma]{\FYOUNGERALL}\ALL
+\pgfplotstableread[col sep=comma]{\FYOUNGERPTSD}\PTSD
+\pgfplotstableread[col sep=comma]{\FYOUNGERTBI}\TBI
+\pgfplotstableread[col sep=comma]{\FYOUNGERNOMDD}\NOMDD
+
+% All Patients
+\addplot [forget plot,name path=f1u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\ALL};
+\addplot [forget plot,name path=f1l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\ALL};
+\addplot [forget plot, fill=\COLORALL, opacity=\CIOPACITY] fill between [of=f1u and f1l, \SOFTCLIP];
+\addplot [draw=\COLORALL, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\ALL};
+
+% PTSD
+\addplot [forget plot,name path=f2u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\PTSD};
+\addplot [forget plot,name path=f2l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\PTSD};
+\addplot [forget plot, fill=\COLORPTSD, opacity=\CIOPACITY] fill between [of=f2u and f2l, \SOFTCLIP];
+\addplot [draw=\COLORPTSD, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\PTSD};
+
+% TBI
+\addplot [forget plot,name path=f3u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\TBI};
+\addplot [forget plot,name path=f3l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\TBI};
+\addplot [forget plot, fill=\COLORTBI, opacity=\CIOPACITY] fill between [of=f3u and f3l, \SOFTCLIP];
+\addplot [draw=\COLORTBI, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\TBI};
+
+% No MDD
+\addplot [forget plot,name path=f4u,draw=none] table [col sep=comma,x=\XCOL, y=\YUP] {\NOMDD};
+\addplot [forget plot,name path=f4l,draw=none] table [col sep=comma,x=\XCOL, y=\YLO] {\NOMDD};
+\addplot [forget plot, fill=\COLORNOMDD, opacity=\CIOPACITY] fill between [of=f4u and f4l, \SOFTCLIP];
+\addplot [draw=\COLORNOMDD, very thick] table [col sep=comma,x=\XCOL, y=\YCOL] {\NOMDD};
+
+  \end{axis}
+\end{tikzpicture}
+};
+
+% Titles
+\node[anchor=south west, xshift=\TitleXShift] at ([yshift=-.275in]A.north west) {{\LabelSize a.} ROC Curve - Males};
+\node[anchor=south west, xshift=\TitleXShift] at ([yshift=-.3in]B.north west) {{\LabelSize b.} PPV vs Sensitivity Curve - Males};
+\node[anchor=south west, xshift=\TitleXShift] at ([yshift=-.21in]C.north west) {{\LabelSize c.} Likelihood Ratio Curve - Males};
+
+\node[anchor=south west, xshift=\TitleXShift] at ([yshift=-.275in]D.north west) {{\LabelSize d.} ROC Curve - Females};
+\node[anchor=south west, xshift=\TitleXShift] at ([yshift=-.3in]E.north west) {{\LabelSize e.} PPV vs Sensitivity Curve - Females};
+\node[anchor=south west, xshift=\TitleXShift] at ([yshift=-.21in]F.north west) {{\LabelSize f.} Likelihood Ratio Curve - Females};
+
+\end{tikzpicture}

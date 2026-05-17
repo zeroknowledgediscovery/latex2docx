@@ -1,0 +1,135 @@
+\begin{tikzpicture}[font=\bf\sffamily\fontsize{8}{8}\selectfont]
+
+\path[use as bounding box] (-0.25in,-2.95in) rectangle (3.25in,0.25in);
+\clip (-0.25in,-2.95in) rectangle (3.25in,0.25in);
+
+\def\SOFTCLIP{}
+\def\DATA{plotdata/curves}
+\def\TEXTCOL{gray}
+\def\WDT{0.33\textwidth}
+\def\HGT{0.33\textwidth}
+\def\CIOPACITY{0.25}
+\def\AXISCOL{lightgray}
+
+% requires \usepackage[dvipsnames]{xcolor}
+\def\COLORMOLD{Maroon}
+\def\COLORFOLD{NavyBlue}
+\def\COLORMYNG{magenta}
+\def\COLORFYNG{cyan}  
+
+\def\MYNG{\DATA/SUICIDALITY-M2550-1M-No_PSYCH.csv}
+\def\MOLD{\DATA/SUICIDALITY-M5075-1M-No_PSYCH.csv}
+\def\FYNG{\DATA/SUICIDALITY-F2550-1M-No_PSYCH.csv}
+\def\FOLD{\DATA/SUICIDALITY-F5075-1M-No_PSYCH.csv}
+
+\node [anchor=north west] at (0,0) {%
+\begin{tikzpicture}
+  \begin{axis}[
+      legend cell align=left,
+      text=\TEXTCOL,
+      legend style={
+        text=black,
+        anchor=south east,
+        at={(0.98,0.02)},
+        inner sep=1pt,
+        draw=none,
+        fill=white,
+        fill opacity=.15,
+        align=left,
+        text opacity=1,
+        font=\bf\sffamily\fontsize{8}{8}\selectfont,
+        row sep=-2pt,
+      },
+      clip=false,
+      width=\WDT,
+      height=\HGT,
+      scale only axis=true,
+      enlargelimits=false,
+      axis on top=false,
+      axis line style={\AXISCOL, very thick},
+      grid=both,
+      major grid style={opacity=.5,thick,black!40},
+      minor grid style={opacity=.4,thin,black!20},
+      xlabel style={yshift=.05in,text=\TEXTCOL},
+      ylabel style={align=center,text=\TEXTCOL,anchor=center,yshift=-0.175in},
+      ytick align=outside,
+      xtick align=outside,
+      major tick length=0pt,
+      minor tick num=4,
+      minor tick length=0pt,
+      scaled y ticks=false,
+      y tick label style={
+        /pgf/number format/fixed,
+        /pgf/number format/1000 sep=\thinspace
+      },
+      ylabel={Sensitivity},
+      xlabel={1 - Specificity},
+      xmin=0,
+      xmax=1,
+      ymin=0,
+      ymax=1
+  ]
+
+\def\XCOL{fpr}
+\def\YCOL{tpr}
+\def\YUP{tpr_upper}
+\def\YLO{tpr_lower}
+
+\pgfplotstableset{
+  columns/{\XCOL,\YCOL,\YUP,\YLO}/.style={string type}
+}
+
+\pgfplotstableread[col sep=comma]{\MYNG}\MYNGDATA
+\pgfplotstableread[col sep=comma]{\MOLD}\MOLDDATA
+\pgfplotstableread[col sep=comma]{\FYNG}\FYNGDATA
+\pgfplotstableread[col sep=comma]{\FOLD}\FOLDDATA
+
+% Males, 25--50
+\addplot [forget plot,name path=myngu,draw=none]
+table [x=\XCOL, y=\YUP] {\MYNGDATA};
+\addplot [forget plot,name path=myngl,draw=none]
+table [x=\XCOL, y=\YLO] {\MYNGDATA};
+\addplot [forget plot, fill=\COLORMYNG, opacity=\CIOPACITY]
+fill between [of=myngu and myngl, \SOFTCLIP];
+\addplot [draw=\COLORMYNG, very thick]
+table [x=\XCOL, y=\YCOL] {\MYNGDATA};
+\addlegendentry{Males, 25--50}
+
+% Males, 50--75
+\addplot [forget plot,name path=moldu,draw=none]
+table [x=\XCOL, y=\YUP] {\MOLDDATA};
+\addplot [forget plot,name path=moldl,draw=none]
+table [x=\XCOL, y=\YLO] {\MOLDDATA};
+\addplot [forget plot, fill=\COLORMOLD, opacity=\CIOPACITY]
+fill between [of=moldu and moldl, \SOFTCLIP];
+\addplot [draw=\COLORMOLD, very thick]
+table [x=\XCOL, y=\YCOL] {\MOLDDATA};
+\addlegendentry{Males, 50--75}
+
+% Females, 25--50
+\addplot [forget plot,name path=fyngu,draw=none]
+table [x=\XCOL, y=\YUP] {\FYNGDATA};
+\addplot [forget plot,name path=fyngl,draw=none]
+table [x=\XCOL, y=\YLO] {\FYNGDATA};
+\addplot [forget plot, fill=\COLORFYNG, opacity=\CIOPACITY]
+fill between [of=fyngu and fyngl, \SOFTCLIP];
+\addplot [draw=\COLORFYNG, very thick]
+table [x=\XCOL, y=\YCOL] {\FYNGDATA};
+\addlegendentry{Females, 25--50}
+
+% Females, 50--75
+\addplot [forget plot,name path=foldu,draw=none]
+table [x=\XCOL, y=\YUP] {\FOLDDATA};
+\addplot [forget plot,name path=foldl,draw=none]
+table [x=\XCOL, y=\YLO] {\FOLDDATA};
+\addplot [forget plot, fill=\COLORFOLD, opacity=\CIOPACITY]
+fill between [of=foldu and foldl, \SOFTCLIP];
+\addplot [draw=\COLORFOLD, very thick]
+table [x=\XCOL, y=\YCOL] {\FOLDDATA};
+\addlegendentry{Females, 50--75}
+
+  \end{axis}
+\end{tikzpicture}
+};
+
+\end{tikzpicture}

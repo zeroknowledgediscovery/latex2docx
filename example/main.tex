@@ -1,0 +1,643 @@
+\documentclass[onecolumn, compsoc,11pt]{IEEEtran}
+\usepackage{paralist}
+\usepackage{enumitem}
+\input{preamble.tex}
+\newcommand{\indep}{\perp\!\!\!\perp}
+\newcommand{\SPOR}{\operatorname{\Lambda-OR}} 
+\newcommand{\COR}{\operatorname{OR}}
+\newcommand{\logor}{\log\SPOR}
+\newcommand{\clogor}{\log\COR}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\AUC}{\operatorname{AUC}}
+\usepackage{booktabs}
+
+\def\COLA{black}
+% ###################################
+\cfoot{\bf\sffamily \scriptsize \color{Maroon!50} I. Chattopadhyay, Department of Medicine, University of Chicago}
+\cfoot{}
+\rhead{}
+\def\ZERO{ACoR\xspace}
+\def\COLWA{\XCOLA!40}
+\def\COLWB{\XCOLD!20}
+\def\COLWC{\XCOLA!40}
+\def\COLWD{\XCOLD!20}
+\def\COLWE{\XCOLA!40}
+\def\COLWF{\XCOLD!20}
+% ############################################################
+\def\treatment{case\xspace}
+\def\SUPPLEMENTARY{Supplementary\xspace}
+\def\METHODS{Online Methods\xspace}
+\def\zebra{\textbf{ZeBRA}\xspace}
+\def\EXTENDEDDATA{}
+
+\def\zcor{\zebra}
+\def\pcor{ZCoR-IPF\xspace}
+\def\DISEASE{IPF\xspace}
+
+
+\def\TITLE{Zero-question Universal Semi-continuous Screening for Suicidal Ideation and Near-future Suicide Attempts }
+\def\TITLE{Passive  Point-of-Care Structured EHR Surveillance for Near-Term Suicidal Ideation and Suicide Attempt Risk}
+\begin{document}
+\xtitaut{\TITLE}{Dmytro Onishchenko$^2$,  Jennifer Reid$^{2}$, Robert Gibbons$^{3}$ and Ishanu Chattopadhyay$^{1,\star}$}
+%
+\begin{enumerate}[leftmargin=0pt,
+labelindent=0em, topsep=0.0em, labelsep=*, itemsep=.45em,itemindent=1em]
+\item[$^1$] Division of Biomedical Informatics, University of Kentucky, Lexington, KY USA
+\item[$^2$] VA, Lexington, KY USA
+\item[$^3$] Department of Medicine, University of Chicago, Chicago IL USA
+\item[$^\star$] Corresponding author. \texttt{ishanu\_ch@uky.edu}
+\end{enumerate}
+
+\vspace{20pt} 
+\begin{abstract}
+Suicidal ideation and suicide attempts (SI/SA) remain leading causes of morbidity and mortality, yet current detection strategies rely heavily on patient self-report, clinician recognition, or encounter-based screening, which may miss individuals without prior psychiatric diagnoses or regular mental health contact. We evaluated whether near-term SI/SA can be detected using only routinely collected structured electronic health record (EHR) data, without questionnaires, clinical notes, bespoke data collection, or additional screening encounters. In this retrospective cohort study of 29,568,802 patients derived from longitudinal administrative claims data, we developed and validated ZeBRA, a machine learning risk model for first recorded SI/SA across 1-week, 1-month, and 6-month prediction horizons and in clinically relevant subgroups. We positioned the 1-month horizon as the primary deployment-oriented setting because it provides an actionable window for review, outreach, and stepped-care intervention. For this primary horizon, ZeBRA achieved out-of-sample AUCs of 0.890 $\pm$ 0.005 in adults aged 50--75 years and 0.875 $\pm$ 0.004 in adults aged 25--50 years. Immediate-warning performance was stronger at 1 week, with AUCs of 0.904 $\pm$ 0.004 and 0.888 $\pm$ 0.003, respectively, and discrimination remained robust at 6 months, with AUCs of 0.861 $\pm$ 0.006 and 0.841 $\pm$ 0.004. At deployment-relevant operating points, positive predictive value reached 0.658 $\pm$ 0.002 in adults aged 50--75 years and 0.619 $\pm$ 0.002 in adults aged 25--50 years, with positive likelihood ratios exceeding 75--114. Performance remained strong in patients with traumatic brain injury (TBI) and post-traumatic stress disorder (PTSD), and remained robust among patients without prior major depressive disorder, indicating that the signal is not reducible to documented depression alone. In a stricter negative-history analysis excluding patients with prior mental or behavioral disorder codes, performance was attenuated but remained above chance across sex, age, and horizon strata, supporting detection of risk outside conventional psychiatric coding histories. For the primary 1-month model, calibration analyses showed low Brier scores of 0.003--0.006 and calibration slopes near 1.0 across sex- and age-stratified cohorts. Threshold-crossing patients also showed accelerated event accumulation over subsequent weeks; at 10 weeks, absolute risk differences exceeded 50 percentage points across all strata, supporting time-bounded clinical decision support after a positive screen. In higher-risk deployment settings such as Veterans Health Administration populations, the model is expected to identify approximately one true positive for every one to two false positives at high-specificity operating points. These findings suggest that passive, semi-continuous, structured EHR-based surveillance can provide scalable, low-burden detection of emerging SI/SA risk and may support earlier targeted intervention among patients under-detected by conventional screening pathways.
+\end{abstract}
+
+\vspace{20pt}
+\section*{Introduction}
+
+Suicidal ideation and suicide attempts remain difficult to predict in routine clinical care, particularly in patients who do not disclose active symptoms, lack prior psychiatric diagnoses, or present outside specialty mental health settings. Existing risk assessment strategies rely heavily on clinician-administered instruments, patient self-report, or unstructured clinical documentation, which limits scalability, introduces workflow burden, and may miss opportunities for earlier intervention \cite{nock2017psychological,tang2022people,fowler2022suicide}. Although electronic health records (EHRs) provide an opportunity for passive risk surveillance, prior EHR-based approaches have faced important deployment barriers. Large-scale structured-data models have demonstrated predictive signal but can yield limited positive predictive value when applied to rare outcomes at population scale \cite{simon2018predicting,belsher2019prediction}. Other approaches improve predictive richness by incorporating clinician assessment, patient self-report, unstructured notes, or natural language processing, but these strategies introduce additional data-collection requirements, documentation dependencies, or implementation infrastructure that may limit transportability across health systems \cite{tsui2021natural,walsh2021predicting,barakcorren2020validation}.
+
+A central challenge is that suicidality is rarely reducible to a single proximate psychiatric variable. Rather, risk appears to emerge from complex longitudinal trajectories involving psychiatric illness, trauma, substance use, sleep disturbance, chronic pain, neurological injury, and broader patterns of health care utilization. This is particularly relevant in clinically important subgroups such as patients with traumatic brain injury (TBI) and post-traumatic stress disorder (PTSD), both of whom carry elevated risk for suicidal ideation and attempts, but remain heterogeneous in presentation and outcome \cite{nock2017psychological}. It is also relevant in patients without prior major depressive disorder (MDD), who may still carry substantial latent risk but fall outside standard depression-centered screening pathways.
+
+Our recent work has shown that subtle patterns embedded in longitudinal structured health records can function as zero-burden digital biomarkers for complex disorders, enabling early screening for autism spectrum disorder, idiopathic pulmonary fibrosis, and perioperative major adverse cardiac events using only routinely collected data and without requiring new tests, imaging, or questionnaires \cite{onishchenko2021reduced,onishchenko2022screening,JAHA2022}. The common principle is that longitudinal records contain disease-relevant latent structure that may be exploited by machine learning to identify future risk before conventional diagnosis or overt clinical recognition.
+
+
+Here we extend the \zebra framework to suicidal ideation, intentional self-harm, and suicide attempts. Using structured diagnosis, medication, and procedural histories from Merative MarketScan \cite{hansen2017truven}, we develop sex- and age-stratified models to predict first recorded SI/SA at 1 week, 1 month, and 6 months before the event. We position the 1-month horizon as the primary deployment-oriented setting because it provides a clinically actionable window for review, outreach, and stepped-care intervention, while remaining sufficiently near-term to support high-specificity risk enrichment. We also evaluate the 1-week horizon as an immediate-warning setting and the 6-month horizon to determine whether the signal persists earlier in the pre-event trajectory. We evaluate performance in the general population and in clinically enriched subgroups with PTSD and TBI, as well as in patients without prior MDD. We further test a stricter negative-history cohort excluding patients with prior mental or behavioral disorder codes, to assess whether the model detects risk beyond previously documented psychiatric morbidity. Finally, because deployment requires more than discrimination alone, we evaluate calibration, threshold-based event timing, and dynamic post-screening operating characteristics over follow-up windows \(k\), to determine whether passive structured-data surveillance can support actionable, time-bounded clinical workflows.
+
+%% \input{tables/patient_characteristics}
+\begin{table}[!ht]
+\centering
+\fontsize{9}{10}\selectfont
+
+\caption{Baseline characteristics of patient cohorts}
+\label{table_pat_char}
+
+\begin{tabular}{
+  |L{0.81in}|L{1.41in}|L{1.41in}|L{1.41in}|L{1.41in}|
+}
+\hline
+%\rowcolor{black!20}
+\textbf{} &
+\textbf{Males, 25--50\newline (n = 7,189,133)} &
+\textbf{Females, 25--50\newline (n = 9,679,018)} &
+\textbf{Males, 50--75\newline (n = 5,838,398)} &
+\textbf{Females, 50--75\newline (n = 6,862,253)} \\
+\hline
+
+Target &
+Control: 7,145,962 (99.4\%),\newline Case: 43,171 (0.6\%) &
+Control: 9,614,405 (99.3\%),\newline Case: 64,613 (0.7\%) &
+Control: 5,816,266 (99.6\%),\newline Case: 22,132 (0.4\%) &
+Control: 6,835,811 (99.6\%),\newline Case: 26,442 (0.4\%) \\
+\hline
+
+Mean age at screening &
+39 years 8 months &
+39 years 2 months &
+59 years 9 months &
+59 years 8 months \\
+\hline
+
+Mean ER admissions & 0.40 & 0.49 & 0.46 & 0.47 \\
+\hline
+Mean DX codes & 30.14 & 43.65 & 53.19 & 61.41 \\
+\hline
+Mean RX codes & 15.72 & 21.76 & 34.04 & 37.58 \\
+\hline
+Mean PROC codes & 39.24 & 58.68 & 66.21 & 75.92 \\
+\hline
+
+Depression &
+Case: 17,240 (39.9\%),\newline Control: 439,197 (6.1\%) &
+Case: 35,302 (54.6\%),\newline Control: 1,141,139 (11.9\%) &
+Case: 9,814 (44.3\%),\newline Control: 348,736 (6.0\%) &
+Case: 15,598 (59.0\%),\newline Control: 810,049 (11.9\%) \\
+\hline
+
+TBI &
+Case: 1,008 (2.3\%),\newline Control: 38,681 (0.5\%) &
+Case: 1,459 (2.3\%),\newline Control: 46,577 (0.5\%) &
+Case: 713 (3.2\%),\newline Control: 33,632 (0.6\%) &
+Case: 812 (3.1\%),\newline Control: 41,112 (0.6\%) \\
+\hline
+
+PTSD &
+Case: 2,122 (4.9\%),\newline Control: 30,723 (0.4\%) &
+Case: 5,669 (8.8\%),\newline Control: 75,410 (0.8\%) &
+Case: 928 (4.2\%),\newline Control: 22,538 (0.4\%) &
+Case: 1,569 (5.9\%),\newline Control: 31,496 (0.5\%) \\
+\hline
+
+Substance Abuse &
+Case: 14,536 (33.7\%),\newline Control: 551,743 (7.7\%) &
+Case: 17,474 (27.0\%),\newline Control: 526,828 (5.5\%) &
+Case: 7,447 (33.6\%),\newline Control: 464,905 (8.0\%) &
+Case: 7,369 (27.9\%),\newline Control: 409,794 (6.0\%) \\
+\hline
+
+Anxiety &
+Case: 16,861 (39.1\%),\newline Control: 660,082 (9.2\%) &
+Case: 33,061 (51.2\%),\newline Control: 1,414,191 (14.7\%) &
+Case: 7,660 (34.6\%),\newline Control: 373,311 (6.4\%) &
+Case: 12,787 (48.4\%),\newline Control: 807,085 (11.8\%) \\
+\hline
+
+Schizophrenia &
+Case: 640 (1.5\%),\newline Control: 5,266 (0.1\%) &
+Case: 681 (1.1\%),\newline Control: 4,848 (0.1\%) &
+Case: 447 (2.0\%),\newline Control: 5,372 (0.1\%) &
+Case: 570 (2.2\%),\newline Control: 6,797 (0.1\%) \\
+\hline
+
+Disorders of adult personality and behavior &
+Case: 1,391 (3.2\%),\newline Control: 21,665 (0.3\%) &
+Case: 2,629 (4.1\%),\newline Control: 25,437 (0.3\%) &
+Case: 641 (2.9\%),\newline Control: 12,713 (0.2\%) &
+Case: 984 (3.7\%),\newline Control: 13,156 (0.2\%) \\
+\hline
+
+Insomnia &
+Case: 5,328 (12.3\%),\newline Control: 224,908 (3.1\%) &
+Case: 10,261 (15.9\%),\newline Control: 408,854 (4.3\%) &
+Case: 3,072 (13.9\%),\newline Control: 198,689 (3.4\%) &
+Case: 4,771 (18.0\%),\newline Control: 359,023 (5.3\%) \\
+\hline
+
+Mental and Behavioral Disorders &
+Case: 31,143 (72.1\%),\newline Control: 1,629,099 (22.8\%) &
+Case: 51,973 (80.4\%),\newline Control: 2,812,472 (29.3\%) &
+Case: 16,103 (72.8\%),\newline Control: 1,204,798 (20.7\%) &
+Case: 21,614 (81.7\%),\newline Control: 1,847,372 (27.0\%) \\
+\hline
+
+\end{tabular}
+\end{table}
+
+\section*{Results}
+%########################################
+
+
+\begin{figure}[t]
+\centering 
+  \tikzexternalenable
+  \tikzsetnextfilename{figperf1M}
+%\tikzXtrue
+\iftikzX
+\input{Figures/CURVEPLOT_1M}
+\else
+\includegraphics[width=.95\textwidth]{Figures/External/figperf1M}
+\fi
+
+\vspace{-30pt}
+
+\caption{
+One-month prediction performance across patient cohorts. Out-of-sample performance of the ZeBRA SISA model for predicting first recorded suicidal ideation, intentional self-harm, or suicide attempt within 1 month of the screening index point. Panels (a)–(c) show results for males and panels (d)–(f) show results for females. Panels (a) and (d) show receiver operating characteristic (ROC) curves for the all-patient cohort and for the PTSD, TBI, and no-MDD subcohorts. Panels (b) and (e) show positive predictive value (PPV) as a function of sensitivity across decision thresholds. Panels (c) and (f) show the corresponding positive likelihood ratio (LR+) across thresholds. All metrics were computed on held-out validation patients; shaded or error annotations, where present, denote the uncertainty reported in the Methods.
+}   \label{fig_curves}
+\end{figure}
+
+
+%########################################
+%########################################
+%########################################
+%########################################
+
+
+%\input{tables/performance}
+\begin{table}[!ht]
+\centering
+ 
+\caption{\zebra performance for the 1-month prediction horizon.}
+\label{table_perf}
+\fontsize{9}{10}\selectfont
+\begin{tabular}{
+L{0.45in}|L{0.375in}|L{0.6in}|
+>{\raggedleft\arraybackslash}L{0.55in}|
+>{\raggedleft\arraybackslash}L{0.55in}|
+>{\raggedleft\arraybackslash}L{0.55in}|
+>{\raggedleft\arraybackslash}L{0.55in}|
+>{\raggedleft\arraybackslash}L{0.55in}|
+>{\raggedleft\arraybackslash}L{0.55in}|
+>{\raggedleft\arraybackslash}L{0.55in}
+}
+\hline
+\rowcolor{black!20}
+\textbf{Sex} & \textbf{Age} & \textbf{Cohort} & \textbf{AUC} & \textbf{TPR} & \textbf{PPV} & \textbf{ACC} & \textbf{NPV} & \textbf{LR+} & \textbf{LR-} \\
+\hline
+
+\multirow{8}{*}{Males}
+& \multirow{4}{*}{25--50}
+& All Patients & $0.87 \pm 0.01$ & $0.57 \pm 0.01$ & $0.07 \pm 0.01$ & $0.95 \pm 0.01$ & $1.00 \pm 0.01$ & $11.26 \pm 0.13$ & $0.45 \pm 0.01$ \\
+\cline{3-10}
+& & PTSD         & $0.82 \pm 0.02$ & $0.38 \pm 0.03$ & $0.40 \pm 0.02$ & $0.90 \pm 0.01$ & $0.95 \pm 0.01$ & $7.77 \pm 0.57$ & $0.65 \pm 0.03$ \\
+\cline{3-10}
+& & TBI          & $0.89 \pm 0.02$ & $0.58 \pm 0.04$ & $0.28 \pm 0.01$ & $0.94 \pm 0.01$ & $0.99 \pm 0.01$ & $11.60 \pm 0.81$ & $0.45 \pm 0.04$ \\
+\cline{3-10}
+& & no MDD       & $0.81 \pm 0.01$ & $0.43 \pm 0.01$ & $0.03 \pm 0.01$ & $0.95 \pm 0.01$ & $1.00 \pm 0.01$ & $8.57 \pm 0.18$ & $0.60 \pm 0.01$ \\
+\cline{2-10}
+& \multirow{4}{*}{50--75}
+& All Patients & $0.89 \pm 0.01$ & $0.61 \pm 0.01$ & $0.05 \pm 0.01$ & $0.95 \pm 0.01$ & $1.00 \pm 0.01$ & $12.13 \pm 0.19$ & $0.41 \pm 0.01$ \\
+\cline{3-10}
+& & PTSD         & $0.83 \pm 0.02$ & $0.35 \pm 0.04$ & $0.26 \pm 0.02$ & $0.92 \pm 0.01$ & $0.97 \pm 0.01$ & $7.68 \pm 0.86$ & $0.68 \pm 0.05$ \\
+\cline{3-10}
+& & TBI          & $0.89 \pm 0.03$ & $0.54 \pm 0.05$ & $0.21 \pm 0.02$ & $0.94 \pm 0.01$ & $0.99 \pm 0.01$ & $11.37 \pm 1.04$ & $0.49 \pm 0.06$ \\
+\cline{3-10}
+& & no MDD       & $0.82 \pm 0.01$ & $0.46 \pm 0.01$ & $0.02 \pm 0.01$ & $0.95 \pm 0.01$ & $1.00 \pm 0.01$ & $9.12 \pm 0.28$ & $0.57 \pm 0.02$ \\
+\hline
+
+\multirow{8}{*}{Females}
+& \multirow{4}{*}{25--50}
+& All Patients & $0.90 \pm 0.01$ & $0.61 \pm 0.01$ & $0.08 \pm 0.01$ & $0.95 \pm 0.01$ & $1.00 \pm 0.01$ & $12.04 \pm 0.11$ & $0.42 \pm 0.01$ \\
+\cline{3-10}
+& & PTSD         & $0.83 \pm 0.01$ & $0.37 \pm 0.02$ & $0.43 \pm 0.01$ & $0.90 \pm 0.01$ & $0.94 \pm 0.01$ & $7.49 \pm 0.34$ & $0.66 \pm 0.02$ \\
+\cline{3-10}
+& & TBI          & $0.88 \pm 0.02$ & $0.52 \pm 0.04$ & $0.27 \pm 0.01$ & $0.94 \pm 0.01$ & $0.98 \pm 0.01$ & $10.47 \pm 0.71$ & $0.51 \pm 0.04$ \\
+\cline{3-10}
+& & no MDD       & $0.84 \pm 0.01$ & $0.47 \pm 0.01$ & $0.03 \pm 0.01$ & $0.95 \pm 0.01$ & $1.00 \pm 0.01$ & $9.28 \pm 0.17$ & $0.56 \pm 0.01$ \\
+\cline{2-10}
+& \multirow{4}{*}{50--75}
+& All Patients & $0.91 \pm 0.01$ & $0.65 \pm 0.01$ & $0.05 \pm 0.01$ & $0.95 \pm 0.01$ & $1.00 \pm 0.01$ & $12.89 \pm 0.17$ & $0.37 \pm 0.01$ \\
+\cline{3-10}
+& & PTSD         & $0.84 \pm 0.02$ & $0.40 \pm 0.03$ & $0.34 \pm 0.02$ & $0.92 \pm 0.01$ & $0.96 \pm 0.01$ & $7.94 \pm 0.67$ & $0.64 \pm 0.04$ \\
+\cline{3-10}
+& & TBI          & $0.90 \pm 0.02$ & $0.57 \pm 0.05$ & $0.21 \pm 0.01$ & $0.94 \pm 0.01$ & $0.99 \pm 0.01$ & $11.45 \pm 0.97$ & $0.45 \pm 0.05$ \\
+\cline{3-10}
+& & no MDD       & $0.85 \pm 0.01$ & $0.50 \pm 0.02$ & $0.02 \pm 0.01$ & $0.95 \pm 0.01$ & $1.00 \pm 0.01$ & $9.92 \pm 0.30$ & $0.53 \pm 0.02$ \\
+\hline
+\end{tabular}
+\end{table}
+%########################################
+%########################################
+
+\begin{figure}[t]
+\tikzexternalenable
+\tikzsetnextfilename{figsurvival}
+%\tikzXtrue
+\iftikzX
+\input{Figures/figsurvival}
+\else
+\includegraphics[width=\textwidth]{Figures/External/figsurvival}
+\fi
+%
+\caption{\textbf{Calibration and threshold-based temporal risk behavior of the \zebra model.}
+a, Calibration of predicted risk against observed event rate across sex- and age-stratified cohorts. Points show binned mean predicted risk and corresponding observed event rate; the dashed red line denotes perfect calibration. The approximately diagonal trend indicates that higher \zebra risk scores correspond to higher observed SI/SA rates (See Table~\ref{tab:calibration_metrics} for intercept and slope estimates).
+b, KM plots to show event-free survival following a threshold-based positive screen. Patients were stratified by whether their \zebra risk score crossed the prespecified high-specificity threshold (99\%). Across all sex- and age-stratified cohorts, patients crossing threshold showed substantially faster accumulation of documented events over the subsequent weeks than patients who never crossed threshold, supporting the use of threshold crossing as a time-bounded clinical decision support trigger.
+c, Dynamic threshold operating characteristics as a function of follow-up window $k$ (weeks). We define $E_k$ as the occurrence of a documented event within $k$ weeks, $\rho$ as the \zebra risk score, and $t$ as the threshold corresponding to the high-specificity operating point, and plot  time-dependent predictive values, $P(E_k \vert \rho > t)$ and $P(\neg E_k \vert \rho \leq t)$, together with prevalence-independent operating characteristics, $P(\rho > t \vert E_k)$ and $P(\rho \leq t \vert \neg E_k)$. These curves quantify both the clinical yield of a positive screen and the stability of threshold-based discrimination over the post-screening follow-up interval.}\label{figsurvival}  
+\end{figure}
+
+\begin{table}[ht]
+\centering
+\caption{Calibration performance by sex and age stratum for 1 month horizon (see also Fig.~\ref{figsurvival}a).}
+\label{tab:calibration_metrics}
+\small
+\begin{tabular}{>{\raggedleft\arraybackslash}p{1in}
+                >{\raggedright\arraybackslash}p{1in}
+                >{\raggedright\arraybackslash}p{2in}
+                >{\raggedleft\arraybackslash}p{2in}}
+\toprule
+Sex & Age & Metric & Value$^\star$ \\
+\midrule
+\multirow{3}{*}{Female} & \multirow{3}{*}{25--50}
+& Brier score & 0.006 (0.006, 0.006) \\
+& & Calibration intercept & -0.004 (-0.158, 0.100) \\
+& & Calibration slope & 1.002 (0.962, 1.026) \\
+\midrule
+\multirow{3}{*}{Female} & \multirow{3}{*}{50--75}
+& Brier score & 0.003 (0.003, 0.003) \\
+& & Calibration intercept & -0.137 (-0.142, 0.289) \\
+& & Calibration slope & 0.970 (0.959, 1.063) \\
+\midrule
+\multirow{3}{*}{Male} & \multirow{3}{*}{25--50}
+& Brier score & 0.006 (0.006, 0.006) \\
+& & Calibration intercept & -0.158 (-0.162, 0.110) \\
+& & Calibration slope & 0.962 (0.952, 1.024) \\
+\midrule
+\multirow{3}{*}{Male} & \multirow{3}{*}{50--75}
+& Brier score & 0.003 (0.003, 0.003) \\
+& & Calibration intercept & -0.141 (-0.146, 0.120) \\
+& & Calibration slope & 0.965 (0.950, 1.013) \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.5em}
+\begin{minipage}{0.95\linewidth}
+\footnotesize
+$^\star$ Rounded to three decimal places. Values in parentheses denote 95\% confidence intervals obtained by bootstrap resampling of out-of-sample predictions.
+\end{minipage}
+\end{table}
+
+\subsection*{Cohort structure and analytic setting}
+We developed four separate models for males and female adults, aged 25--50 years and those aged 50--75 years. In the analytic cohorts used for model development and validation, the all-patient population comprised $n=7{,}189{,}133$ individuals in the younger male group, $n=5{,}838{,}398$ in the older male group, $n=9{,}679{,}018$ in the younger female group, and $n=6{,}862{,}253$ in the older female group. The corresponding positive-class counts were $43,171$, $22,132$, $64,613$ and $26,442$  respectively. 
+We additionally evaluated performance in clinically important subcohorts with PTSD, TBI, and no prior MDD diagnosis. Outcome prevalence was substantially enriched in PTSD and TBI cohorts, and lower in the no-MDD cohorts, yielding a useful test of robustness across both high-risk and under-recognized populations. Baseline cohort characteristics and subcohort prevalence are summarized in Table~\ref{table_pat_char}.
+All ICD-10 codes used to define the prediction tragets is enumerated in Table~\ref{table_target}.
+
+The male age-25--50 models used 42,662 total features and 393,008 trainable parameters, while the female age-25--50 models used 44,680 total features and 608,346 trainable parameters, male age-50--75 models used 43,281 total features and 282,337 trainable parameters, and female age-50--75 models used 44,150 total features and 357,303 trainable parameters. Features were derived from diagnostic, pharmacy, and procedural histories and combined in a stacked LightGBM architecture (Table~\ref{table_MODEL_NUMBERS}).
+
+\subsection*{Overall predictive performance}
+Model performance across cohorts and prediction horizons is summarized in Table~\ref{table_perf}. Our models demonstrated strong out-of-sample discrimination across both age groups and all three prediction horizons. In the all-patient cohort aged 50+, the area under the receiver operating characteristic curve (AUC) was $0.904 \pm 0.004$ at 1 week, $0.890 \pm 0.005$ at 1 month, and $0.861 \pm 0.006$ at 6 months. In the all-patient cohort aged 25--50, the corresponding AUCs were $0.888 \pm 0.003$, $0.875 \pm 0.004$, and $0.841 \pm 0.004$. Thus, performance was highest for near-term prediction, but remained strong even at 6 months.
+Discrimination performance across prediction horizons and subcohorts is illustrated in Figure~\ref{fig_curves}.
+
+
+At a high-specificity operating point, the model yielded marked enrichment over baseline prevalence. For 1-week prediction in the all-patient setting, positive predictive value (PPV) was $0.658 \pm 0.002$ in adults aged 50+ and $0.619 \pm 0.002$ in adults aged 25--50, with positive likelihood ratios (LR$+$) of $114.5 \pm 6.9$ and $77.63 \pm 2.57$, respectively. These results indicate that even in the broad population, structured longitudinal records contain substantial signal for short-term suicidality risk.
+Positive predictive value and likelihood ratio behavior across operating points are shown in Figure~\ref{fig_curves}, panels b,c,e,f.
+
+\subsection*{Performance in TBI and PTSD subgroups}
+Performance was particularly strong in the TBI subgroups. In adults aged 50+ with TBI, AUC was $0.891 \pm 0.022$ at 1 week, $0.884 \pm 0.024$ at 1 month, and $0.868 \pm 0.030$ at 6 months. In adults aged 25--50 with TBI, the corresponding AUCs were $0.899 \pm 0.017$, $0.894 \pm 0.019$, and $0.880 \pm 0.022$. At the 1-week high-specificity operating point, PPV reached $0.813 \pm 0.016$ in older adults and $0.818 \pm 0.011$ in younger adults, with LR$+$ values of $36.85 \pm 7.13$ and $49.78 \pm 7.05$, respectively.
+
+PTSD subgroups also showed substantial enrichment and good discrimination, though with lower AUCs than TBI. In adults aged 50+ with PTSD, AUC was $0.838 \pm 0.022$ at 1 week, $0.831 \pm 0.023$ at 1 month, and $0.808 \pm 0.029$ at 6 months. In adults aged 25--50 with PTSD, AUC was $0.830 \pm 0.015$ at 1 week, $0.825 \pm 0.016$ at 1 month, and $0.797 \pm 0.021$ at 6 months. At the 1-week high-specificity operating point, PPV was $0.778 \pm 0.025$ in older adults and $0.752 \pm 0.016$ in younger adults. Thus, despite greater clinical heterogeneity, PTSD cohorts remained highly enrichable by passive structured-data-based screening.
+
+\subsection*{Prediction in patients without prior MDD}
+
+To test whether the model relied mainly on recognized depressive illness, we evaluated performance in cohorts without prior MDD diagnosis. Predictive performance remained substantial in both age strata. In adults aged 50+ without MDD, AUC was $0.839 \pm 0.008$ at 1 week, $0.824 \pm 0.008$ at 1 month, and $0.797 \pm 0.009$ at 6 months. In adults aged 25--50 without MDD, the corresponding AUCs were $0.826 \pm 0.006$, $0.814 \pm 0.006$, and $0.783 \pm 0.006$.
+
+At the 1-week high-specificity operating point, PPV was $0.458 \pm 0.011$ in older adults and $0.414 \pm 0.008$ in younger adults, with LR$+$ values of $49.12 \pm 3.45$ and $45.20 \pm 2.24$, respectively. These results indicate that the predictive signal is not reducible to prior MDD diagnosis alone, and instead reflects broader latent structure in the longitudinal health record.
+The results for 1 week and 6 month prediction horizons are summarized in Table~\ref{table_perf1W6M}.
+
+
+In a stricter negative-history analysis, we further evaluated patients with no recorded prior mental or behavioral disorder ICD10 codes F10x-F69x. Performance was attenuated relative to the no-MDD cohort but remained above chance across all sex, age, and horizon strata, with AUCs ranging from approximately 0.685 to 0.771 and positive likelihood ratios generally between 4 and 6.5 (See Table~\ref{table_perf_nopsych}). This analysis suggests that the model is not solely recovering previously documented psychiatric morbidity, although predictive signal is reduced when all prior mental and behavioral disorder documentation is excluded.
+
+\subsection*{Age-stratified behavior}
+
+Across most settings, performance in the full population was slightly stronger in adults aged 50+ than in those aged 25--50, especially at the shortest horizon. However, subgroup performance was broadly similar across age strata, particularly in TBI, where both age groups achieved AUCs near or above 0.89 at 1 week and 1 month. This suggests that the model architecture generalizes well across age, with slightly stronger performance in older adults possibly reflecting denser medical histories and more stable coding patterns.
+
+\subsection*{Calibration and temporal behavior after threshold crossing:}
+Because the 1-month model was selected as the primary deployment-oriented horizon, we further evaluated calibration and post-threshold temporal behavior for this model. Predicted risk was well aligned with observed event rates across sex- and age-stratified cohorts (Fig.~\ref{figsurvival}a). Calibration metrics were stable across strata (Table~\ref{tab:calibration_metrics}). Brier scores were 0.006 in both 25--50 year cohorts and 0.003 in both 50--75 year cohorts. Calibration slopes were close to 1.0 across all strata: 1.002 (95\% CI, 0.962--1.026) in females aged 25--50, 0.970 (95\% CI, 0.959--1.063) in females aged 50--75, 0.962 (95\% CI, 0.952--1.024) in males aged 25--50, and 0.965 (95\% CI, 0.950--1.013) in males aged 50--75. Calibration intercepts were -0.004 (95\% CI, -0.158 to 0.100), -0.137 (95\% CI, -0.142 to 0.289), -0.158 (95\% CI, -0.162 to 0.110), and -0.141 (95\% CI, -0.146 to 0.120), respectively.
+
+We next evaluated post-screening event timing using a Kaplan--Meier analysis stratified by whether the \zebra risk score crossed the prespecified 99\% specificity threshold (Fig.~\ref{figsurvival}b). Across all sex- and age-stratified cohorts, patients crossing threshold showed faster accumulation of documented SI/SA events than patients who never crossed threshold. The separation was present in each stratum but differed in magnitude. Among males aged 25--50 years, the 10-week risk ratio was 26.46, with an absolute risk difference of 50.38 percentage points. Among females aged 25--50 years, the corresponding risk ratio was lower, 4.18, but the absolute risk difference remained large at 51.31 percentage points. The strongest relative separation was observed in the older cohorts: males aged 50--75 years had a 10-week risk ratio of 38.95 and an absolute risk difference of 55.37 percentage points, while females aged 50--75 years had a risk ratio of 38.93 and an absolute risk difference of 57.09 percentage points. In all four strata, log-rank tests were significant at $p < 10^{-20}$ (Table~\ref{table_threshold_survival_metrics}). Consistent with these summary metrics, Fig.~\ref{figsurvival}b shows that event-free survival among threshold-crossing patients fell below 50\% by 10 weeks, whereas patients who never crossed threshold remained largely event-free, with survival probabilities generally above 95\% for males in both age groups and females in teh 50-75 year group, while the female 25-50 cohort remained above 85\%.
+
+
+Finally, we computed dynamic threshold operating characteristics over follow-up windows \(k\) after screening (Fig.~\ref{figsurvival}c). We defined \(E_k\) as a documented SI/SA event within \(k\) weeks, \(\rho\) as the \zebra risk score, and \(t\) as the 99\% specificity threshold. The time-dependent predictive value \(P(E_k \mid \rho > t)\) increased monotonically with the follow-up window, rising from approximately 0.16--0.18 at 1 week to approximately 0.30--0.35 by 4 weeks, approximately 0.50 by 8 weeks, and approximately 0.55--0.60 by 10 weeks. Thus, among patients crossing the high-specificity threshold, observed event yield accumulated rapidly over the subsequent weeks. In contrast, \(P(\neg E_k \mid \rho \leq t)\) remained high throughout follow-up, staying near 0.95--0.98 across the evaluated windows, indicating that patients who did not cross threshold were very likely to remain event-free over the short-term follow-up interval.
+The complementary prevalence-independent operating characteristics showed the expected high-specificity deployment profile. Dynamic sensitivity, \(P(\rho > t \mid E_k)\), remained relatively stable at approximately 0.38--0.42 across the \(k\)-week windows, whereas dynamic specificity, \(P(\rho \leq t \mid \neg E_k)\), remained high at approximately 0.95--0.98. These results show that the 99\% specificity threshold defines a deliberately selective alerting rule: it does not capture all eventual events, but patients who cross threshold have a sharply increased short-term event probability, while patients who remain below threshold have a high probability of remaining event-free during the same follow-up period.
+
+
+\section*{Discussion}
+
+In this retrospective out-of-sample study, we show that future suicidal ideation, intentional self-harm, and suicide attempts can be predicted from structured longitudinal health records alone, without requiring questionnaires, clinician-entered narrative notes, manually curated psychiatric screening variables, or new patient-facing data collection. Across sex- and age-stratified cohorts and across 1-week, 1-month, and 6-month prediction horizons, the \zebra model achieved strong discrimination in the general population and in clinically important subgroups, including patients with traumatic brain injury (TBI), post-traumatic stress disorder (PTSD), and no prior major depressive disorder (MDD). These findings suggest that routinely collected structured health records encode a measurable vulnerability state that precedes clinically documented SI/SA and can be detected before the first recorded target event.
+
+These results should be interpreted in the context of prior work showing that suicidality is detectable from longitudinal EHR data. Early large-scale studies demonstrated that routine-care records contain meaningful predictive signal for suicide attempts and suicide deaths \cite{simon2018predicting,barakcorren2017}, and subsequent multi-site validation studies showed that EHR-based suicide risk models can generalize across health systems \cite{barakcorren2020,barakcorren2020validation}. Other work has extended these models toward prospective or real-time risk monitoring \cite{walsh2017,walsh2021,walsh2021predicting}. Hybrid approaches have also improved prediction by incorporating clinician assessment, patient self-report, or unstructured clinical notes \cite{nock2022,tsui2021natural,tsui2021,obeid2020identifying}. These studies establish that EHR-based prediction is feasible, but they also highlight a deployment tradeoff: richer models may capture additional signal, whereas structured-data-only models are more portable, easier to automate, and better suited for passive surveillance across health systems.
+
+A persistent implementation challenge is that even well-performing suicide prediction models may generate large numbers of false positives when applied across low-prevalence populations \cite{belsher2019prediction}. This limitation reflects a fundamental property of rare-event prediction rather than a failure of modeling methodology. A model can therefore achieve acceptable discrimination while still having limited clinical usefulness if the positive alert stream contains too few true cases to support feasible review. Accordingly, the practical value of a prediction system depends not only on AUC, but also on whether risk can be concentrated within clinically manageable volumes and actionable time windows.
+
+The present study contributes to this literature by emphasizing deployability and operational concentration of risk rather than discrimination alone. The model operates exclusively on routinely collected structured data and requires no questionnaires, no manual chart review, no clinical notes, and no new documentation workflows. This design enables semi-continuous background surveillance across large health systems with minimal incremental patient or clinician burden. The model was also evaluated at high-specificity operating points designed to enrich the alert stream. Under plausible high-risk deployment assumptions, discussed below, this operating regime approaches one true positive for every one to two false positives, and can approach an approximately one-to-one true-positive-to-false-positive ratio under more stringent thresholding. Thus, the central deployment claim is not AUC alone, but the ability to convert passive structured-record surveillance into a clinically reviewable alert stream.
+
+The subgroup analyses support the broader clinical relevance of this approach. Performance remained strong in PTSD and TBI subgroups, two populations with elevated but heterogeneous risk. Performance also remained robust among patients without prior MDD. In the stricter negative-history analysis excluding prior mental or behavioral disorder codes, performance was attenuated but remained above chance, indicating that the model is not simply rediscovering already documented psychiatric morbidity. These findings support a conceptual interpretation of suicidality as an emergent state reflected in the aggregate structure of longitudinal medical histories rather than in any single diagnostic label. Many individuals who later engage in suicidal behavior are not identified through traditional depression-centered screening pathways \cite{tang2022people,fowler2022suicide}. The present findings suggest that risk may be detectable earlier through patterns of comorbidity, healthcare utilization, medication history, injury history, and clinical instability that accumulate over time.
+
+For the primary 1-month deployment model, calibration and temporal analyses further support this interpretation. Calibration slopes were near 1.0 across all sex- and age-stratified cohorts, and Brier scores were low, ranging from 0.003 in the older cohorts to 0.006 in the younger cohorts. These findings suggest that the model is not merely ranking patients, but also preserving a stable empirical relationship between predicted and observed event rates. This matters for implementation because threshold behavior is more interpretable when the score maintains a consistent relationship to observed risk, although local threshold re-estimation would still be required before deployment.
+
+The post-threshold timing analyses add a second operational dimension. In Kaplan--Meier analyses, patients crossing the 99\% specificity threshold accumulated documented SI/SA events substantially faster than those who never crossed threshold. At 10 weeks, the absolute risk difference exceeded 50 percentage points in every sex-age stratum. The 10-week risk ratio was 26.46 in males aged 25--50 years, 4.18 in females aged 25--50 years, 38.95 in males aged 50--75 years, and 38.93 in females aged 50--75 years. Thus, threshold crossing did not merely define a high-score subgroup; it identified a short-term interval during which observed events accumulated rapidly.
+
+The dynamic \(k\)-window analyses showed the same pattern from a decision-support perspective. The time-dependent event yield among threshold-crossing patients, \(P(E_k\mid \rho>t)\), increased over follow-up, rising from approximately 0.16--0.18 at 1 week to approximately 0.55--0.60 by 10 weeks. In contrast, \(P(\neg E_k\mid \rho\leq t)\) remained high throughout follow-up, generally near 0.95--0.98, indicating that patients who did not cross threshold were likely to remain event-free over the short-term interval. The prevalence-independent dynamic sensitivity, \(P(\rho>t\mid E_k)\), remained approximately 0.38--0.42, while dynamic specificity, \(P(\rho\leq t\mid \neg E_k)\), remained high at approximately 0.95--0.98. These results are consistent with a high-specificity deployment strategy: the threshold does not capture all eventual events, but patients who cross threshold have substantially elevated short-term event incidence. Accordingly, a positive screen is best interpreted as activation of a time-bounded high-risk monitoring interval, rather than as an indefinite static risk label.
+
+The model may also support complementary operational modes. A high-specificity threshold can identify a compact, highly enriched set of individuals for targeted outreach, structured assessment, or stepped-care intervention. A higher-sensitivity threshold could instead function as a low-burden first-stage screen to prioritize downstream clinical evaluation. Because the model operates entirely on structured data already collected in routine care, either mode can be integrated into existing workflows without requiring new screening instruments or additional documentation requirements. Taken together, these findings suggest that the principal barrier to large-scale suicide risk detection is not predictive accuracy alone, but the alignment of prediction systems with clinical workflow, population prevalence, available intervention capacity, and the time scale over which an alert remains clinically actionable.
+
+\subsection*{Operational Scale and Quantitative Deployment Implications}
+
+A central practical question for any screening system is not only whether it predicts risk accurately, but whether it can be deployed at scale without overwhelming clinical workflows. The present model operates in a regime that is unusual for population-level behavioral screening: in a high-risk veteran population, it can approach a one-to-one to one-to-two relationship between true positives and false positives, depending on the operating threshold. In practical terms, this means that for every individual correctly identified as experiencing near-future SI/SA risk, the model may generate only about one to two additional alerts requiring review. Such operating characteristics compare favorably with those typically reported for population-scale behavioral screening and have direct implications for feasibility.
+
+As an example, we consider the Lexington Veterans Affairs (VA) Health Care System, which serves a catchment population of approximately $83{,}000$ veterans \cite{VA_Lexington_About}. In fiscal year (FY) 2024, Lexington VA saw $N = 37{,}017$ unique patients, among whom 167 unique patients generated documented suicidal behavior reports through the VA suicide prevention reporting infrastructure \cite{VA_VINCI_Lexington_2024}. National survey data indicate that approximately 4.8\% to 5.0\% of U.S.\ adults report serious thoughts of suicide within a given year \cite{SAMHSA_2023_NSduh}, and multiple studies have shown that veterans experience substantially higher rates of suicidal ideation and suicide attempts than nonveteran populations, often three to four times higher than those observed in the general population \cite{NHRVS_Suicide_Ideation,VA_Suicide_Report_2023}. Accordingly, we treat a 5\% prevalence as a conservative lower-bound estimate for latent suicidal ideation or self-harm risk in a VA population. Under this assumption, the estimated number of individuals experiencing SI/SA in the actively treated Lexington cohort is
+$ N \times p = 37{,}017 \times 0.05 \approx 1{,}851.$ Relative to this latent burden, the 167 currently documented FY24 cases suggest that existing reporting captures only about $ 167/1{,}851 \approx 9.0\% $
+of the implied underlying burden. Using the operating characteristics observed in the present study, a deployment threshold with $\mathrm{Sp}=0.95$ and $\mathrm{Se}\approx0.54$ would be expected to yield
+\cgather{
+\mathrm{TP} \approx 37{,}017 \times 0.05 \times 0.54 \approx 999,\\
+\mathrm{FP} \approx 37{,}017 \times (1-0.05) \times (1-0.95) \approx 1{,}758,\\
+\mathrm{FN} \approx 1{,}851 - 999 \approx 852,\\
+\mathrm{TN} \approx 37{,}017 - 999 - 1{,}758 - 852 \approx 33{,}408.
+}
+These values correspond to approximately 1 true positive for every 1.76 false positives and would increase case capture from roughly 9\% of the latent burden under current observed reporting to approximately $ 999/1{,}851 \approx 54\%.$
+Equivalently, the expected positive predictive value at this operating point is $\frac{999}{999+1{,}758} \approx 36.2\%.$
+Tightening the threshold to a higher-specificity operating point, for example $\mathrm{Sp}=0.99$ with $\mathrm{Se}\approx0.20$, would yield
+\cgather{
+\mathrm{TP} \approx 37{,}017 \times 0.05 \times 0.20 \approx 370,\\
+\mathrm{FP} \approx 37{,}017 \times (1-0.05) \times (1-0.99) \approx 352.
+}
+This corresponds to approximately a one-to-one relationship between true and false positives, while still increasing detection to about $ 370/1{,}851 \approx 20\%$ of the latent burden and more than doubling the currently observed number of identified cases. The corresponding expected positive predictive value is
+$\frac{370}{370+352} \approx 51.2\%.$ Thus, in this illustrative VA deployment scenario, high-specificity passive surveillance moves the alert stream into a clinically reviewable range, from approximately one true positive for every 1.76 false positives at 95\% specificity to approximately one true positive for every 0.95 false positives at 99\% specificity.
+
+An important feature of the present approach is that monitoring is passive and semi-continuous. The model operates automatically on routinely collected healthcare data and can be executed at regular intervals without requiring patient questionnaires, clinician-entered assessments, or dedicated screening visits. As a result, the marginal cost of surveillance is low, and the primary operational burden is limited to evaluating a relatively small number of flagged individuals. This is a materially different deployment profile from standard point-of-care screening, because the healthcare system is not being asked to create new encounters or new documentation streams simply to maintain surveillance.
+
+We further considered the potential economic implications of early identification and intervention. National analyses estimate that nonfatal self-harm events result in approximately \$13 billion in annual direct medical expenditures in the United States, corresponding to roughly \$28{,}000 in direct medical spending per treated event \cite{Peterson_2024_SelfHarmCosts}. These figures provide a practical benchmark for evaluating the potential value of prevention. Let $c$ denote the cost of evaluating one positive alert and $C_e$ the average direct medical cost of a treated self-harm event. The break-even prevention fraction $q_{\mathrm{BE}}$ is given by
+\cgather{
+q_{\mathrm{BE}} = \frac{\mathrm{FP} \times c}{\mathrm{TP} \times C_e}.
+}
+Assuming a conservative evaluation cost of $c = \$100$ per alert and $C_e = \$28{,}000$, the break-even prevention fraction at the 95\% specificity operating point is
+\cgather{
+q_{\mathrm{BE}} \approx \frac{1{,}758 \times 100}{999 \times 28{,}000} \approx 0.0063,
+}
+or approximately 0.6\%. In practical terms, preventing fewer than 1\% of detected high-risk individuals from progressing to a medically treated self-harm event would offset the direct medical costs associated with screening and triage in this illustrative scenario. Because the system operates continuously using existing data infrastructure, implementation does not require new testing capacity, new screening instruments, or dedicated screening encounters. This substantially improves the plausibility of sustained deployment.
+
+These calculations suggest that high-specificity passive surveillance for suicidality may be operationally feasible and economically favorable in large healthcare systems serving high-risk populations. The ability to identify clinically meaningful cases with relatively few false positives is particularly important in behavioral health settings, where excessive alert volume can rapidly erode trust in the system and overwhelm clinical resources.
+
+\subsection*{Limitations}
+
+This study has several limitations. First, the analysis is retrospective and based on administrative and claims-derived structured data. Although the model was evaluated in out-of-sample cohorts, prospective validation in independent health systems will be necessary to confirm performance under real-world deployment conditions. In particular, implementation studies will be required to determine how stable the operating characteristics remain across institutions and to identify the threshold settings best aligned with local clinical capacity.
+
+Second, the outcome definition relies on recorded diagnostic codes for suicidal ideation, intentional self-harm, and suicide attempts. These codes may lag the true onset of symptoms or fail to capture events that are not documented in structured data. Accordingly, the coded event rate in administrative datasets likely underestimates the true burden of suicidality in the underlying population. This limitation is important because it implies that the model is being trained against a conservative proxy for the full latent burden.
+
+Third, as with all predictive models in mental health, strong predictive performance does not imply mechanistic causation. The predictors identified by the model should therefore be interpreted as statistical risk signatures reflecting patterns in longitudinal health records rather than as direct causal drivers of suicidal behavior. The model is intended to support early identification and triage, not to replace clinical judgment or structured assessment.
+
+Fourth, the present analysis does not constitute a formal cost-effectiveness evaluation. The calculations above are intended to illustrate operational scale and budget plausibility rather than to estimate long-term economic impact. A comprehensive economic analysis incorporating intervention effectiveness, downstream utilization, and patient-centered outcomes will be required to determine the full value of implementation.
+
+Finally, the present study does not directly evaluate the effect of screening on outcomes. The model identifies individuals at elevated near-future risk, but the real-world benefit of deployment will depend on the availability, timeliness, and effectiveness of downstream clinical responses. The calibration, Kaplan--Meier, and dynamic \(k\)-window analyses show temporal enrichment after threshold crossing, but they do not demonstrate that model-triggered intervention reduces subsequent SI/SA events. In addition, predictive values, false-positive burden, and cost implications are prevalence-dependent and must be re-estimated locally before deployment. Future prospective studies should therefore evaluate not only predictive performance, but also workflow integration, intervention uptake, patient outcomes following identification, and local threshold selection.
+
+\subsection*{Conclusion}
+
+In this large retrospective study, we show that future suicidal ideation, intentional self-harm, and suicide attempts may be detected using only routinely collected structured health records. The model achieved strong discrimination across populations and prediction horizons without requiring questionnaires, clinician-entered narrative notes, specialized psychiatric screening workflows, or bespoke data collection. Detailed calibration and temporal analyses further indicate that threshold crossing identifies a short-term high-risk state, supporting time-bounded clinical decision support workflows rather than one-time or indefinite risk labeling.
+
+From an operational perspective, the system functions in a clinically practical regime. In a high-risk population such as the Veterans Health Administration, the model is expected to yield approximately one true positive for every one to two false positives at high-specificity operating points. Because monitoring is passive and semi-continuous, deployment can occur with minimal disruption to existing workflows and without additional patient burden.
+
+Taken together, these findings suggest that population-scale, low-burden detection of suicidality is achievable using existing healthcare data infrastructure. Passive high-specificity surveillance may enable earlier identification of individuals at risk, support timely clinical engagement, and improve the efficiency of suicide prevention efforts in large healthcare systems. Prospective implementation studies will be necessary to confirm real-world effectiveness and to quantify the impact of early identification on patient outcomes, healthcare utilization, and long-term cost.
+
+
+
+\section*{Methods}
+
+\subsection*{Data source and prediction task}
+
+Training and validation data were drawn from the Merative MarketScan claims database \cite{hansen2017truven}. The target outcome was defined as the first recorded occurrence of suicidal ideation, intentional self-harm, or suicide attempt in the structured record, as identified using ICD-10 codes (see Table~\ref{table_target}).
+Patients were stratified by sex and age group, and separate models were trained to predict first target occurrence at 1 week, 1 month, and 6 months after a screening index point. All reported performance metrics were obtained on held-out out-of-sample data. Performance was further evaluated in clinically relevant subcohorts with PTSD, TBI, and no prior MDD diagnosis.
+
+\subsection*{Cohort construction}
+
+Cases were individuals with one or more target codes and sufficient visibility in the database before the target event.
+For each case, the screening index point was defined at the specified prediction horizon before the first observed target code.
+Controls were age-matched, target-code-free individuals with sufficient follow-up of 2 or more years after the screening point to ensure a target-free observation window. For all patients, predictor variables were derived exclusively from pre-index data.
+
+\subsection*{Feature representation}
+
+Each patient was represented using longitudinal diagnosis (Dx), pharmacy (Rx), and procedure (Proc) histories. For each modality, two complementary feature sets were constructed.
+
+First, binary presence features were used to indicate whether each code appeared in the observation window. Second, we constructed a low-dimensional embedding summarizing case--control odds-ratio structure for the codes present in a patient's record. Specifically, code-level association statistics were computed in the training data relative to the target phenotype, and these values were then aggregated across the codes present in an individual's record into a 12-dimensional embedding. This yielded six input streams in total: Dx presence, Dx embedding, Rx presence, Rx embedding, Proc presence, and Proc embedding.
+
+\subsection*{Model architecture}
+
+The final ZeBRA model was a stacked LightGBM ensemble. For each modality, two base learners were trained, one on binary presence features and one on the 12-dimensional odds-ratio embedding, yielding six base predictors in total. Their outputs were then combined by a final LightGBM model together with demographic variables to produce the final risk score.
+
+The age-50+ model used 43,609 total features and 289,914 trainable parameters. The age-25--50 model used 42,858 total features and 419,307 trainable parameters.
+
+\subsection*{Training and evaluation}
+
+Within each age-specific cohort, data were split into training and held-out validation sets. The training portion was used to estimate code-level statistics and train the stacked model. All results reported in the manuscript reflect out-of-sample validation performance.
+
+Model discrimination was assessed primarily by the area under the receiver operating characteristic curve. Additional metrics included sensitivity, specificity, positive predictive value, negative predictive value, accuracy, positive likelihood ratio, and negative likelihood ratio. To illustrate operational trade-offs, we evaluated both high-specificity and high-sensitivity operating points. Subgroup analyses were performed by applying the relevant age-specific model to TBI, PTSD, and no-MDD cohorts.
+
+
+\subsection*{Methodological context}
+
+The current model extends the zero-burden digital biomarker framework previously developed for autism spectrum disorder, idiopathic pulmonary fibrosis, and perioperative cardiac events \cite{onishchenko2021reduced,onishchenko2022screening,JAHA2022}. In contrast to earlier ZeBRA implementations based on sequence-derived feature engineering, the present suicidality model uses a compact odds-ratio embedding together with high-dimensional binary code presence, integrated in a stacked gradient-boosted architecture. The underlying design objective remains the same: to estimate future disease risk using only data already available in routine structured health records, without requiring new tests, questionnaires, or manual feature curation.
+
+
+%% \subsection*{Prior work and methodological context}
+
+%% The current model extends the zero-burden digital biomarker framework previously developed for autism spectrum disorder, idiopathic pulmonary fibrosis, and perioperative cardiac events \cite{onishchenko2021reduced,onishchenko2022screening,JAHA2022}. In contrast to earlier ZeBRA implementations based on sequence-derived feature engineering, the present suicidality model uses a compact odds-ratio embedding together with high-dimensional binary code presence, integrated in a stacked gradient-boosted architecture. The underlying design objective remains the same: to estimate future disease risk using only data already available in routine structured health records, without requiring new tests, questionnaires, or manual feature curation.
+
+%% A growing body of work has demonstrated that suicidal ideation and suicide attempts can be predicted from electronic health records (EHRs), using both structured clinical data and hybrid approaches incorporating additional signals. Early large-scale studies developed and validated risk models using longitudinal EHR data to predict suicide attempts and deaths, establishing that routinely collected healthcare data contain substantial predictive signal for suicidality \cite{barakcorren2017}. Subsequent multi-site validation studies further demonstrated that such models can generalize across health systems and patient populations \cite{barakcorren2020}.
+
+%% Related work has explored different modeling strategies and populations. Walsh et al.\ applied machine learning to EHR data to predict short-term suicide risk, showing improved performance over traditional risk assessment approaches \cite{walsh2017}. More recent studies have extended these approaches to prospective and real-time settings, demonstrating that EHR-based models can support continuous risk monitoring in clinical workflows \cite{walsh2021}.
+
+%% Hybrid approaches have sought to improve prediction by incorporating additional data sources. In particular, \emph{Prediction of Suicide Attempts Using Clinician Assessment, Patient Self-report, and Electronic Health Records} combined EHR data with clinician assessments and patient self-report to improve identification of high-risk individuals \cite{nock2022}. Similarly, Tsui et al.\ and Obeid et al. demonstrated improved prediction of first-time suicide attempts using natural language processing of clinical notes \cite{tsui2021,obeid2020identifying}.
+
+%% Overall, prior work indicates that suicidality is detectable in longitudinal health records, but highlights a trade-off between scalability and predictive richness: structured-data-only models are broadly deployable and enable passive screening, whereas hybrid models incorporating clinician input or unstructured text may capture additional signal at the cost of increased implementation complexity.
+
+\section*{Acknowledgements}
+The project described was supported by the NIH National Center for Advancing Translational Sciences through grant number UL1TR001998.  The content is solely the responsibility of the authors and does not necessarily represent the official views of the NIH.
+
+
+\section*{Software and Data Availability}
+The administrative claims datasets used in this study are proprietary and cannot be deposited in a public repository. Access to the underlying patient-level data is governed by the data-use agreements and licensing restrictions of the data provider. To support reproducibility of the modeling workflow, a functioning API implementation of the full \zebra SISA pipeline, including model input processing, risk-score generation, and deployment-oriented inference utilities, is available at \url{https://github.com/zeroknowledgediscovery/zebra_sisa_models}. The repository provides the software interface needed to execute the trained pipeline in an authorized environment, subject to applicable data-access permissions and institutional approvals.
+
+
+\bibliographystyle{IEEEtran}
+\bibliography{zcor,shap,allbib,jamacommentary,methods,sisa2,spor}
+
+\clearpage
+
+% Model Numbers
+\setcounter{page}{1}
+\setcounter{figure}{0}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\setcounter{table}{0}
+\renewcommand{\thetable}{S\arabic{table}}
+
+%\section*{Supplementary Figures and Tables}
+\include{zebramethods}
+
+\include{figurestablesextrapredictionwindows}
+
+
+%\include{tables/performance_nopsych}
+
+%\include{tables/performance_survival_models}
+
+
+
+%% \begin{table}[!ht]
+%% \centering
+%% \fontsize{9}{10}\selectfont
+
+%% \caption{Patient Characteristics (Epic Cosmos Estimate)}
+%% \label{table_pat_char}
+
+%% \begin{tabular}{
+%%   |L{0.85in}|L{1.4in}|L{1.4in}|L{1.4in}|L{1.4in}|
+%% }
+%% \hline
+%% \rowcolor{black!30}
+%% \textbf{} &
+%% \textbf{Males, 25--50\newline (n = 19,322,900)} &
+%% \textbf{Females, 25--50\newline (n = 27,806,200)} &
+%% \textbf{Males, 50--75\newline (n = 23,634,800)} &
+%% \textbf{Females, 50--75\newline (n = 28,732,100)} \\
+%% \hline
+
+%% Target &
+%% Control: 18,510,300 (95.8\%),\newline Case: 812,600 (4.2\%) &
+%% Control: 26,860,500 (96.6\%),\newline Case: 945,700 (3.4\%) &
+%% Control: 23,160,400 (98.0\%),\newline Case: 474,400 (2.0\%) &
+%% Control: 28,246,700 (98.3\%),\newline Case: 485,400 (1.7\%) \\
+%% \hline
+
+%% Mean age at screening &
+%% 38 years 3 months &
+%% 38 years 0 months &
+%% 63 years 2 months &
+%% 63 years 0 months \\
+%% \hline
+
+%% Mean ER admissions & 0.36 & 0.67 & 0.85 & 0.67 \\
+%% \hline
+%% Mean DX codes & 50.39 & 80.12 & 85.33 & 98.06 \\
+%% \hline
+%% Mean RX codes & 570.83 & 916.59 & 970.03 & 1060.77 \\
+%% \hline
+%% Mean PROC codes & 41.95 & 62.32 & 71.79 & 74.94 \\
+%% \hline
+
+%% Depression &
+%% Case: 634,000 (78.0\%),\newline Control: 2,866,100 (15.5\%) &
+%% Case: 829,100 (87.7\%),\newline Control: 7,093,900 (26.4\%) &
+%% Case: 403,200 (85.0\%),\newline Control: 3,923,200 (16.9\%) &
+%% Case: 439,200 (90.5\%),\newline Control: 7,968,600 (28.2\%) \\
+%% \hline
+
+%% TBI &
+%% Case: 95,600 (11.8\%),\newline Control: 707,600 (3.8\%) &
+%% Case: 97,800 (10.3\%),\newline Control: 765,400 (2.8\%) &
+%% Case: 63,900 (13.5\%),\newline Control: 729,900 (3.2\%) &
+%% Case: 51,900 (10.7\%),\newline Control: 738,200 (2.6\%) \\
+%% \hline
+
+%% PTSD &
+%% Case: 164,600 (20.3\%),\newline Control: 397,400 (2.1\%) &
+%% Case: 318,800 (33.7\%),\newline Control: 966,400 (3.6\%) &
+%% Case: 91,000 (19.2\%),\newline Control: 414,500 (1.8\%) &
+%% Case: 136,200 (28.1\%),\newline Control: 676,200 (2.4\%) \\
+%% \hline
+
+%% Substance Abuse &
+%% Case: 662,400 (81.5\%),\newline Control: 5,457,000 (29.5\%) &
+%% Case: 656,900 (69.5\%),\newline Control: 5,083,500 (18.9\%) &
+%% Case: 385,200 (81.2\%),\newline Control: 6,870,900 (29.7\%) &
+%% Case: 339,600 (70.0\%),\newline Control: 5,627,000 (19.9\%) \\
+%% \hline
+
+%% Anxiety &
+%% Case: 556,500 (68.5\%),\newline Control: 4,370,400 (23.6\%) &
+%% Case: 767,000 (81.1\%),\newline Control: 9,800,800 (36.5\%) &
+%% Case: 339,200 (71.5\%),\newline Control: 4,919,400 (21.2\%) &
+%% Case: 409,100 (84.3\%),\newline Control: 9,656,200 (34.2\%) \\
+%% \hline
+
+%% Schizophrenia &
+%% Case: 130,900 (16.1\%),\newline Control: 172,500 (0.9\%) &
+%% Case: 81,400 (8.6\%),\newline Control: 101,000 (0.4\%) &
+%% Case: 72,600 (15.3\%),\newline Control: 193,800 (0.8\%) &
+%% Case: 55,600 (11.5\%),\newline Control: 161,400 (0.6\%) \\
+%% \hline
+
+%% Disorders of adult personality and behavior &
+%% Case: 142,800 (17.6\%),\newline Control: 235,700 (1.3\%) &
+%% Case: 205,300 (21.7\%),\newline Control: 334,200 (1.2\%) &
+%% Case: 66,400 (14.0\%),\newline Control: 137,700 (0.6\%) &
+%% Case: 84,600 (17.4\%),\newline Control: 169,800 (0.6\%) \\
+%% \hline
+
+%% Insomnia &
+%% Case: 204,500 (25.2\%),\newline Control: 1,228,900 (6.6\%) &
+%% Case: 278,200 (29.4\%),\newline Control: 2,205,400 (8.2\%) &
+%% Case: 180,600 (38.1\%),\newline Control: 2,620,200 (11.3\%) &
+%% Case: 217,000 (44.7\%),\newline Control: 4,246,900 (15.0\%) \\
+%% \hline
+
+%% Mental and Behavioral Disorders &
+%% Case: 801,200 (98.6\%),\newline Control: 9,258,000 (50.0\%) &
+%% Case: 937,600 (99.1\%),\newline Control: 14,205,500 (52.9\%) &
+%% Case: 471,000 (99.3\%),\newline Control: 12,302,900 (53.1\%) &
+%% Case: 482,300 (99.4\%),\newline Control: 15,100,800 (53.5\%) \\
+%% \hline
+
+%% \end{tabular}
+%% \end{table}
+
+
+
+\end{document}

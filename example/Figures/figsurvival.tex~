@@ -1,0 +1,679 @@
+
+
+\begin{tikzpicture}[font=\sffamily\fontsize{8}{8}\selectfont]
+\clip (-.65in,-.95in) rectangle (5.95in,1.2in);
+\node[anchor=center] (AA) at (0,0) {
+\def\AXISCOL{black!5}
+\def\TEXTCOL{black!50}
+\def\WDT{1.5in}
+\def\HGT{1.5in}
+\def\CALMY{plotdata/calibration_df_My.csv}
+\def\CALMO{plotdata/calibration_df_Mo.csv}
+\def\COLMO{gray}
+\def\COLMY{black}
+\def\CALFY{plotdata/calibration_df_Fy.csv}
+\def\CALFO{plotdata/calibration_df_Fo.csv}
+\def\COLFO{Blue1}
+\def\COLFY{Green2}
+
+\def\COLM{black}
+\def\COLF{black}
+\def\CIOP{.05}
+\def\DASH{solid}
+\def\COLN{BurntOrange}
+\def\COLNn{BurntOrange!60!black}
+\def\SIZE{1.6pt}
+\def\SIZEB{2.2pt}
+\def\MARKS{}
+\def\OPC{.15}
+\def\OPCM{.5}
+\def\XMIN{.001}
+  \pgfplotsset{
+  maleX/.style={\MARKS,opacity=\OPC,\DASH,thin,mark=*,mark options={fill=white,opacity=\OPCM,mark size=\SIZE,fill opacity=1}},
+  maleXold/.style={\MARKS,opacity=\OPC, \DASH,thin,mark=diamond*,mark options={fill=white,opacity=\OPCM,mark size=\SIZEB,fill opacity=1}},
+  femaleX/.style={\MARKS,opacity=\OPC,\DASH,thin,mark=square*,mark options={fill=white,opacity=\OPCM,mark size=\SIZE,fill opacity=1}},
+  femaleXold/.style={\MARKS,opacity=\OPC,\DASH,thin,mark=triangle*,mark options={fill=white,opacity=\OPCM,mark size=\SIZEB,fill opacity=1}},
+}
+
+
+\begin{tikzpicture}[anchor=center,font=\sffamily\fontsize{8}{8}\selectfont]
+\begin{axis}[text=\TEXTCOL,    set layers,
+    legend style={
+        text=black,,legend cell align={left},
+        anchor=west,at={(.375,.2)},
+        inner sep=1pt,draw=none,
+        fill=white,fill opacity=.85,
+        align=right,text opacity=1,
+        font=\sffamily\fontsize{5}{6}\selectfont,
+        row sep=-2pt,
+    },
+    clip=true,
+      width=\WDT,
+      height=\HGT,
+      scale only axis=true,
+      enlargelimits=false,
+      axis on top=false,
+      axis line style={\AXISCOL, thick},
+      grid=both,
+      major grid style={opacity=.5,thin,black!40},
+      minor grid style={opacity=.4,thin,black!20},
+      xlabel style={yshift=.0in,text=\TEXTCOL},
+      ylabel style={align=center,
+        text=\TEXTCOL,anchor=center,yshift=-.1in},
+      ytick align=outside,
+      xtick align=outside,
+      major tick length=0pt,minor tick num=4,minor tick length=0pt,
+      scaled y ticks = false,
+      y tick label style={/pgf/number format/fixed,/pgf/number format/1000 sep = \thinspace},
+    %% xticklabel style={
+    %%     /pgf/number format/fixed,
+    %%     /pgf/number format/precision=2,
+    %%     /pgf/number format/fixed zerofill,
+    %%     /pgf/number format/1000 sep=\thinspace
+    %% },
+      xmin=\XMIN, xmax=.175,ymin=-0.017, ymax=.175,
+    xlabel={Mean predicted risk},
+    ylabel={Observed event rate},
+    minor tick num=2,xmode=log,ymode=log,
+]
+
+% Calibration curve
+
+\addplot+[
+    maleX,
+    draw=\COLM,
+    no marks,
+    forget plot,
+    error bars/.cd,
+        y dir=both,
+        y explicit,
+        error mark=none,
+] table[
+    col sep=comma,
+    x=mean_pred,
+    y=obs_rate,
+    y error plus expr=\thisrow{obs_rate_hi}-\thisrow{obs_rate},
+    y error minus expr=\thisrow{obs_rate}-\thisrow{obs_rate_lo},
+] {\CALMY};
+
+
+\addplot[\COLM,
+    maleX,
+] table[
+    col sep=comma,
+    x=mean_pred,
+    y=obs_rate
+] {\CALMY};
+\addlegendentry{M 25-50}
+
+
+
+
+
+% Calibration curve
+\addplot+[
+    maleX,
+    draw=\COLM,
+    no marks,
+    forget plot,
+    error bars/.cd,
+        y dir=both,
+        y explicit,
+        error mark=none,
+] table[
+    col sep=comma,
+    x=mean_pred,
+    y=obs_rate,
+    y error plus expr=\thisrow{obs_rate_hi}-\thisrow{obs_rate},
+    y error minus expr=\thisrow{obs_rate}-\thisrow{obs_rate_lo},
+] {\CALMO};
+
+
+
+
+\addplot[maleXold,
+    \COLMO,\COLM,
+  %  mark=*,mark options={fill=white},
+  %  mark size=1.25pt
+] table[
+    col sep=comma,
+    x=mean_pred,
+    y=obs_rate
+] {\CALMO};
+\addlegendentry{M 50-75}
+
+% Calibration curve
+\addplot+[
+    maleX,
+    draw=\COLF,
+    no marks,
+    forget plot,
+    error bars/.cd,
+        y dir=both,
+        y explicit,
+        error mark=none,
+] table[
+    col sep=comma,
+    x=mean_pred,
+    y=obs_rate,
+    y error plus expr=\thisrow{obs_rate_hi}-\thisrow{obs_rate},
+    y error minus expr=\thisrow{obs_rate}-\thisrow{obs_rate_lo},
+] {\CALFY};
+
+\addplot[femaleX,\COLF,
+    %% thick,\COLFY,
+    %% mark=*,mark options={fill=white},
+    %% mark size=1.25pt
+] table[
+    col sep=comma,
+    x=mean_pred,
+    y=obs_rate
+] {\CALFY};
+\addlegendentry{F 25-50}
+% Calibration curve
+
+
+\addplot+[
+    maleX,
+    draw=\COLF,
+    no marks,
+    forget plot,
+    error bars/.cd,
+        y dir=both,
+        y explicit,
+        error mark=none,
+] table[
+    col sep=comma,
+    x=mean_pred,
+    y=obs_rate,
+    y error plus expr=\thisrow{obs_rate_hi}-\thisrow{obs_rate},
+    y error minus expr=\thisrow{obs_rate}-\thisrow{obs_rate_lo},
+] {\CALFO};
+\addplot[femaleXold,\COLF,
+    %% thick,\COLFO,
+    %% mark=*,mark options={fill=white},
+    %% mark size=1.25pt
+] table[
+    col sep=comma,
+    x=mean_pred,
+    y=obs_rate
+] {\CALFO};
+\addlegendentry{F 50-75}
+
+% Perfect calibration line
+\addplot[Red1, on layer=axis foreground,
+    densely dashed,
+    thick
+] coordinates {(\XMIN,\XMIN) (.175,.175)};
+\addlegendentry{Perfect calibration}
+
+\end{axis}
+  \end{tikzpicture}};
+  
+\node[anchor=south west] (BB) at (AA.south east) {
+  \begin{tikzpicture}[anchor=center]
+\def\AXISCOL{black!5}
+\def\TEXTCOL{black!50}
+\def\WDT{1.65in}
+\def\HGT{1.5in} 
+\def\KM{plotdata/KM_DF_.csv}
+\def\COLM{black!40}
+\def\COLF{black!40}
+\def\CIOP{.2}
+\def\DASH{solid}
+\def\COLN{LimeGreen}
+\def\COLNn{\COLN!60!black}
+\def\SIZE{1.6pt}
+\def\SIZEB{2.2pt}
+  \pgfplotsset{
+  maleX/.style={\DASH,thin,mark=*,mark options={fill=white,mark size=\SIZE}},
+  maleN/.style={\DASH, thin,mark=*,mark options={\COLNn,fill=\COLN,mark size=\SIZE,fill opacity=.5}},
+  maleXold/.style={ \DASH,thin,mark=diamond*,mark options={fill=white,mark size=\SIZEB}},
+  maleNold/.style={\DASH, thin,mark=diamond*,mark options={\COLNn,fill=\COLN,mark size=\SIZEB,fill opacity=.6}},
+  femaleX/.style={\DASH,thin,mark=square*,mark options={fill=white,mark size=\SIZE}},
+  femaleN/.style={\DASH,thin,mark=square*,mark options={\COLNn,fill=\COLN,mark size=\SIZE,fill opacity=.6}},
+  femaleXold/.style={\DASH,thin,mark=triangle*,mark options={fill=white,mark size=\SIZEB,fill opacity=1}},
+  femaleNold/.style={\DASH,thin,mark=triangle*,mark options={\COLNn,fill=\COLN,mark size=\SIZEB,fill opacity=.6}},
+}
+\begin{axis}[
+    text=\TEXTCOL,
+    legend columns=1,
+    legend style={
+      text=black,
+      align=left,legend cell align={left},
+        anchor=south west,at={(.05,.015)},
+        inner sep=0pt,draw=none,
+        fill=white,fill opacity=.5,
+       ,text opacity=1,
+        font=\sffamily\fontsize{5}{6}\selectfont,
+        row sep=-2pt,column sep=2pt,
+    },
+    clip=true,
+    width=\WDT,
+    height=\HGT,
+    scale only axis=true,
+    enlargelimits=false,
+    axis on top=false,
+    axis line style={\AXISCOL, thick},
+    grid=both,
+    major grid style={opacity=.5,thin,black!40},
+    minor grid style={opacity=.4,thin,black!20},
+    xlabel style={yshift=.0in,text=\TEXTCOL},
+    ylabel style={align=center,text=\TEXTCOL,anchor=center,yshift=-.15in},
+    ytick align=outside,
+    xtick align=outside,
+    major tick length=0pt,
+    minor tick num=2,
+    minor tick length=0pt,
+    scaled y ticks=false,
+    %% y tick label style={
+    %%     /pgf/number format/fixed,
+    %%     /pgf/number format/1000 sep=\thinspace
+    %% },
+    xticklabel style={
+        /pgf/number format/fixed,
+        /pgf/number format/precision=0,
+        /pgf/number format/fixed zerofill,
+        /pgf/number format/1000 sep=\thinspace
+    },
+    ymax=1.02,ymin=0,
+    xmin=0.0,xmax=10,
+    xlabel={time [weeks]},
+    ylabel={survival probability},
+  ]
+% Male 25-50 X
+\addplot[name path=m2550xlo,maleX,no marks,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival_ci_lower,
+    discard if not={model}{Males2550},
+    discard if not={group}{Crossedthreshold}
+] {\KM};
+\addplot[name path=m2550xhi,maleX,no marks,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival_ci_upper,
+    discard if not={model}{Males2550},
+    discard if not={group}{Crossedthreshold}
+] {\KM};
+\addplot[fill=\COLM,fill opacity=\CIOP,draw=none,forget plot]
+fill between[of=m2550xlo and m2550xhi];
+\addplot[\COLM,maleX,draw=\COLM]
+table[
+    col sep=comma,
+    x=duration,y=survival,
+    discard if not={model}{Males2550},
+    discard if not={group}{Crossedthreshold}
+] {\KM};
+\addlegendentry{M 25-50}
+% Male 25-50 N
+\addplot[name path=m2550nlo,maleN,no marks,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival_ci_lower,
+    discard if not={model}{Males2550},
+    discard if not={group}{Nevercrossedthreshold}
+] {\KM};
+\addplot[name path=m2550nhi,maleN,no marks,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival_ci_upper,
+    discard if not={model}{Males2550},
+    discard if not={group}{Nevercrossedthreshold}
+] {\KM};
+\addplot[\COLM,fill=\COLM,fill opacity=\CIOP,draw=none,forget plot]
+fill between[of=m2550nlo and m2550nhi];
+\addplot[maleN,draw=\COLM,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival,
+    discard if not={model}{Males2550},
+    discard if not={group}{Nevercrossedthreshold}
+] {\KM};
+%\addlegendentry{M 25-50 never crossed}
+
+% Male 50-75 X
+\addplot[name path=m5075xlo,maleXold,no marks,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival_ci_lower,
+    discard if not={model}{Males5075},
+    discard if not={group}{Crossedthreshold}
+] {\KM};
+\addplot[name path=m5075xhi,maleXold,no marks,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival_ci_upper,
+    discard if not={model}{Males5075},
+    discard if not={group}{Crossedthreshold}
+] {\KM};
+\addplot[\COLM,fill=\COLM,fill opacity=\CIOP,draw=none,forget plot]
+fill between[of=m5075xlo and m5075xhi];
+\addplot[maleXold,draw=\COLM,]
+table[
+    col sep=comma,
+    x=duration,y=survival,
+    discard if not={model}{Males5075},
+    discard if not={group}{Crossedthreshold}
+] {\KM};
+\addlegendentry{M 50-75}
+
+% Male 50-75 N
+\addplot[name path=m5075nlo,maleNold,no marks,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival_ci_lower,
+    discard if not={model}{Males5075},
+    discard if not={group}{Nevercrossedthreshold}
+] {\KM};
+\addplot[name path=m5075nhi,maleNold,no marks,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival_ci_upper,
+    discard if not={model}{Males5075},
+    discard if not={group}{Nevercrossedthreshold}
+] {\KM};
+\addplot[\COLM,fill=\COLM,fill opacity=\CIOP,draw=none,forget plot]
+fill between[of=m5075nlo and m5075nhi];
+\addplot[maleNold,draw=\COLM,,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival,
+    discard if not={model}{Males5075},
+    discard if not={group}{Nevercrossedthreshold}
+] {\KM};
+%\addlegendentry{M 50-75 never crossed}
+
+
+% Female 25-50 X
+\addplot[name path=f2550xlo,femaleX,no marks,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival_ci_lower,
+    discard if not={model}{Females2550},
+    discard if not={group}{Crossedthreshold}
+] {\KM};
+\addplot[name path=f2550xhi,femaleX,no marks,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival_ci_upper,
+    discard if not={model}{Females2550},
+    discard if not={group}{Crossedthreshold}
+] {\KM};
+\addplot[\COLF,fill=\COLF,fill opacity=\CIOP,draw=none,forget plot]
+fill between[of=f2550xlo and f2550xhi];
+\addplot[femaleX,draw=\COLF]
+table[
+    col sep=comma,
+    x=duration,y=survival,
+    discard if not={model}{Females2550},
+    discard if not={group}{Crossedthreshold}
+] {\KM};
+\addlegendentry{F 25-50}
+
+% Female 25-50 N
+\addplot[name path=f2550nlo,femaleN,no marks,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival_ci_lower,
+    discard if not={model}{Females2550},
+    discard if not={group}{Nevercrossedthreshold}
+] {\KM};
+\addplot[name path=f2550nhi,femaleN,no marks,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival_ci_upper,
+    discard if not={model}{Females2550},
+    discard if not={group}{Nevercrossedthreshold}
+] {\KM};
+\addplot[\COLF,fill=\COLF,fill opacity=\CIOP,draw=none,forget plot]
+fill between[of=f2550nlo and f2550nhi];
+\addplot[femaleN,draw=\COLF,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival,
+    discard if not={model}{Females2550},
+    discard if not={group}{Nevercrossedthreshold}
+] {\KM};
+%\addlegendentry{F 25-50 never crossed}
+
+
+% Female 50-75 X
+\addplot[name path=f5075xlo,femaleXold,no marks,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival_ci_lower,
+    discard if not={model}{Females5075},
+    discard if not={group}{Crossedthreshold}
+] {\KM};
+\addplot[name path=f5075xhi,femaleXold,no marks,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival_ci_upper,
+    discard if not={model}{Females5075},
+    discard if not={group}{Crossedthreshold}
+] {\KM};
+\addplot[\COLF,fill=\COLF,fill opacity=\CIOP,draw=none,forget plot]
+fill between[of=f5075xlo and f5075xhi];
+\addplot[femaleXold,draw=\COLF]
+table[
+    col sep=comma,
+    x=duration,y=survival,
+    discard if not={model}{Females5075},
+    discard if not={group}{Crossedthreshold}
+] {\KM};
+\addlegendentry{F 50-75}
+% Female 50-75 N
+\addplot[name path=f5075nlo,femaleNold,no marks,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival_ci_lower,
+    discard if not={model}{Females5075},
+    discard if not={group}{Nevercrossedthreshold}
+] {\KM};
+\addplot[name path=f5075nhi,femaleNold,no marks,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival_ci_upper,
+    discard if not={model}{Females5075},
+    discard if not={group}{Nevercrossedthreshold}
+] {\KM};
+\addplot[\COLF,fill=\COLF,fill opacity=\CIOP,draw=none,forget plot]
+fill between[of=f5075nlo and f5075nhi];
+\addplot[femaleNold,draw=\COLF,forget plot]
+table[
+    col sep=comma,
+    x=duration,y=survival,
+    discard if not={model}{Females5075},
+    discard if not={group}{Nevercrossedthreshold}
+] {\KM};
+%\addlegendentry{F 50-75 never crossed}
+
+\addlegendimage{area legend,fill=white, femaleXold}
+\addlegendentry{Crossed threshold}
+\addlegendimage{area legend,,fill=\COLN,femaleNold}
+\addlegendentry{Never crossed threshold}
+  \end{axis}
+\end{tikzpicture}};
+
+
+\node [anchor=south west] (CC) at (BB.south east) {
+  \begin{tikzpicture}[anchor=center]
+\def\AXISCOL{black!5}
+\def\TEXTCOL{black!50}
+\def\WDT{1.65in}
+\def\HGT{1.5in} 
+\def\COLM{black}
+\def\COLF{black}
+\def\CIOP{.05}
+\def\DASH{solid}
+\def\COLN{BurntOrange}
+\def\COLNn{BurntOrange!60!black}
+\def\SIZE{1.6pt}
+\def\SIZEB{2.2pt}
+\def\MARKS{smooth}
+\def\OPC{.75}
+\def\OPCM{.85}
+\def\XMIN{.001}
+\def\COLM{black!40}
+\def\FCOL{white}
+\def\CIOP{.1}
+\def\DASH{solid}
+\def\COLPEX{black}
+\def\COLNPNEX{black}
+\def\COLPCE{Red3}
+\def\COLPNCNE{Red3}
+\def\COLNn{\COLN!60!black}
+\def\SIZE{1.6pt}
+\def\SIZEB{2.2pt}
+\def\DF{plotdata/DYNAMIC_METRICS_DF_mean.csv}
+\pgfplotsset{ pex/.style={\MARKS,opacity=\OPC,\DASH,\COLPEX,semithick,mark=*,mark options={fill=\FCOL,opacity=\OPCM,mark size=\SIZE,fill opacity=1}},
+pnenx/.style={\MARKS,opacity=\OPC,\DASH,\COLNPNEX,semithick,mark=triangle*,mark options={fill=\FCOL,opacity=\OPCM,mark size=\SIZEB,fill opacity=1}},  
+pce/.style={\MARKS,opacity=\OPC,\DASH,\COLPCE,semithick,mark=diamond*,mark options={fill=\FCOL,opacity=\OPCM,mark size=\SIZEB,fill opacity=1}},  
+pncne/.style={\MARKS,opacity=\OPC,\DASH,\COLPNCNE,semithick,mark=square*,mark options={fill=\FCOL,opacity=\OPCM,mark size=\SIZE,fill opacity=1}}
+}
+
+
+  
+\begin{axis}[
+    text=\TEXTCOL,
+    legend columns=1,
+    legend style={
+      text=black,
+      align=left,legend cell align={left},
+        anchor=south west,at={(.05,.575)},
+        inner sep=0pt,draw=none,
+        fill=white,fill opacity=.75,
+       ,text opacity=1,
+        font=\sffamily\fontsize{5}{6}\selectfont,
+        row sep=-2pt,column sep=2pt,
+    },
+    clip=true,
+    width=\WDT,
+    height=\HGT,
+    scale only axis=true,
+    enlargelimits=false,
+    axis on top=false,
+    axis line style={\AXISCOL, thick},
+    grid=both,
+    major grid style={opacity=.5,thin,black!40},
+    minor grid style={opacity=.4,thin,black!20},
+    xlabel style={yshift=.0in,text=\TEXTCOL},
+    ylabel style={align=center,text=\TEXTCOL,anchor=center,yshift=-.15in},
+    ytick align=outside,
+    xtick align=outside,
+    major tick length=0pt,
+    minor tick num=2,
+    minor tick length=0pt,
+    scaled y ticks=false,
+    %% y tick label style={
+    %%     /pgf/number format/fixed,
+    %%     /pgf/number format/1000 sep=\thinspace
+    %% },
+    xticklabel style={
+        /pgf/number format/fixed,
+        /pgf/number format/precision=0,
+        /pgf/number format/fixed zerofill,
+        /pgf/number format/1000 sep=\thinspace
+    },
+    ymax=1.02,ymin=0,
+    xmin=0.0,xmax=10,
+    xlabel={time [weeks]},
+    ylabel={probability},
+  ]
+
+\node[draw=gray,fill=white,fill opacity=.8,on layer=axis background,inner sep=0pt,font=\sffamily\fontsize{5}{6}\selectfont,anchor=south west,align=left] (L) at (axis cs: 2.5,.02) {
+  \mnp{1.2in}{
+    \begin{tabular}{R{.22in}|L{.7in}}
+$\phantom{.}^{\star}E_k$ & Event within $k$ weeks\\$\rho$ & ZeBRA risk \\ $t$ & 99\% spec.  threshold
+      \end{tabular}
+  }
+};
+
+\addplot[name path=m2550xlo,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=x,y=P_event_within_k_given_crossed_lo,
+] {\DF};
+\addplot[name path=m2550xhi,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=x,y=P_event_within_k_given_crossed_hi,
+] {\DF};
+\addplot[pex,opacity=\CIOP,forget plot]
+fill between[of=m2550xlo and m2550xhi];
+\addplot[pex] table[
+    col sep=comma,
+    x=x,y=P_event_within_k_given_crossed_mean,
+] {\DF};
+\addlegendentry{k-PPV: $P(E_k \vert \rho > t)^\star$}
+
+\addplot[name path=m2550xlo,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=x,y=P_no_event_within_k_given_never_crossed_lo,
+] {\DF};
+\addplot[name path=m2550xhi,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=x,y=P_no_event_within_k_given_never_crossed_hi,
+] {\DF};
+\addplot[pnenx,opacity=\CIOP,forget plot]
+fill between[of=m2550xlo and m2550xhi];
+\addplot[pnenx] table[
+    col sep=comma,
+    x=x,y=P_no_event_within_k_given_never_crossed_mean,
+] {\DF};
+\addlegendentry{k-NPV: $P(\neg E_k \vert \rho \leq t)^\star$}
+
+
+
+\addplot[name path=m2550xlo,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=x,y=P_crossed_given_event_within_k_lo,
+] {\DF};
+\addplot[name path=m2550xhi,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=x,y=P_crossed_given_event_within_k_hi,
+] {\DF};
+\addplot[pce,opacity=\CIOP,forget plot]
+fill between[of=m2550xlo and m2550xhi];
+\addplot[pce] table[
+    col sep=comma,
+    x=x,y=P_crossed_given_event_within_k_mean,
+] {\DF};
+\addlegendentry{k-sensitivity: $P(\rho > t \vert E_k)^\star$}
+
+
+
+
+\addplot[name path=m2550xlo,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=x,y=P_never_crossed_given_no_event_within_k_lo,
+] {\DF};
+\addplot[name path=m2550xhi,draw=none,forget plot]
+table[
+    col sep=comma,
+    x=x,y=P_never_crossed_given_no_event_within_k_hi,
+] {\DF};
+\addplot[pncne,opacity=\CIOP,forget plot]
+fill between[of=m2550xlo and m2550xhi];
+\addplot[pncne] table[
+    col sep=comma,
+    x=x,y=P_never_crossed_given_no_event_within_k_mean,
+] {\DF};
+\addlegendentry{k-specificity: $P(\rho \leq t \vert \neg E_k)^\star$}
+
+\end{axis}
+\end{tikzpicture}
+  };
+
+\node[anchor=south west] (L1) at ([xshift=1.1in]AA.north west) {\large a.};
+\node[anchor=south west] (L2) at ([xshift=.2in]BB.north west) {\large b.};
+\node[anchor=south west] (L3) at ([xshift=.2in]CC.north west) {\large c.};
+
+\end{tikzpicture}
+ 
