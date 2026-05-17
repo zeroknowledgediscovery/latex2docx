@@ -1,3 +1,35 @@
+# Quickstart
+
+```
+python generate_docx_submission.py main.tex \
+  --outdir submission_build \
+  --bibliography-style apa-numbered
+
+```
+
+```
+./run_submission_build.sh main.tex submission_build --bibliography-style apa-numbered
+```
+
+```
+--bibliography-style apa
+APA-like author-date style.
+
+--bibliography-style apa-numbered
+APA-like reference formatting, but citations are numbered and references are ordered by first appearance.
+
+--bibliography-style vancouver
+Vancouver-like numbered references.
+
+--bibliography-style ama
+AMA-like numbered references.
+
+--csl /path/to/style.csl
+Overrides the named styles with a custom CSL file.
+
+```
+
+
 # LaTeX-to-DOCX submission builder
 
 This package creates journal-submission DOCX files from a complete LaTeX source while preserving manuscript text.
